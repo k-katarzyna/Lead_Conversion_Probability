@@ -80,22 +80,21 @@ def grid_of_hists(n_rows, n_cols, features, data):
 
 
 def countplot(*args, data):
-
+	
     for feature in args:
         plt.figure(figsize=(15, 3))
         order = data[feature].value_counts().index
-        ax = sns.countplot(x = feature, 
-                           data = data, 
-                           order = order,
-						   palette = "viridis")
+        ax = sns.countplot(x=feature, data=data, order=order, palette="viridis")
         ax.set_yscale("log")
         plt.title(f'Distribution of {feature}')
-        plt.xticks(rotation=45)
-    
+
+        if len(str(data[feature].unique()[0])) >= 4:
+            plt.xticks(rotation=45)
+
         for p in ax.patches:
             height = p.get_height()
             ax.annotate(f'{height:.0f}', (p.get_x() + p.get_width() / 2., height),
-                            ha='center', va='bottom', fontsize = 10)
-    
+                        ha='center', va='bottom', fontsize=10)
+
         plt.tight_layout()
         plt.show()

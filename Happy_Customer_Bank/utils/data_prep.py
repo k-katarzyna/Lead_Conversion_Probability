@@ -14,7 +14,7 @@ def data_preparing_v1(data):
     data.drop("ID", axis=1, inplace=True)
     data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]] = data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]].fillna(0)
 
-    data["City"] = data["City"].apply(lambda x: "Y" if x in biggest_cities else "N" if pd.notna(x) else x)
+    data["City"] = data["City"].apply(lambda x: "Y" if x in biggest_cities else "N" if pd.notna(x) else "Unknown")
 
     data["DOB"] = data["DOB"].apply(lambda x: int(x[-2:]))
 
