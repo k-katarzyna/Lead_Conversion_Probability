@@ -1,0 +1,81 @@
+Model,Parameters,ROC_AUC,Time[s],Threshold,Selected_features
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6789,2.32,0.001,1.0
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6776,2.64,0.002,0.893
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6789,2.56,0.005,0.857
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6786,2.47,0.01,0.786
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6776,2.77,0.015,0.75
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6892,2.55,0.02,0.536
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.689,2.47,0.03,0.357
+DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6897,2.4,0.04,0.286
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8083,2.53,0.001,1.0
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8083,2.79,0.002,0.893
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8076,2.72,0.005,0.857
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8083,2.67,0.01,0.786
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.7998,2.67,0.015,0.75
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.7976,2.66,0.02,0.536
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8067,2.63,0.03,0.357
+DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8067,2.57,0.04,0.286
+BaggingClassifier,n_estimators: 100,0.7803,10.08,0.001,1.0
+BaggingClassifier,n_estimators: 100,0.7809,9.74,0.002,0.893
+BaggingClassifier,n_estimators: 100,0.7802,9.22,0.005,0.857
+BaggingClassifier,n_estimators: 100,0.7795,8.99,0.01,0.786
+BaggingClassifier,n_estimators: 100,0.7709,9.37,0.015,0.75
+BaggingClassifier,n_estimators: 100,0.7722,7.89,0.02,0.536
+BaggingClassifier,n_estimators: 100,0.7692,6.17,0.03,0.357
+BaggingClassifier,n_estimators: 100,0.7636,5.94,0.04,0.286
+BaggingClassifier,n_estimators: 200,0.8009,10.27,0.001,1.0
+BaggingClassifier,n_estimators: 200,0.8042,9.58,0.002,0.893
+BaggingClassifier,n_estimators: 200,0.8087,9.35,0.005,0.857
+BaggingClassifier,n_estimators: 200,0.8055,9.18,0.01,0.786
+BaggingClassifier,n_estimators: 200,0.8007,9.11,0.015,0.75
+BaggingClassifier,n_estimators: 200,0.8034,7.89,0.02,0.536
+BaggingClassifier,n_estimators: 200,0.794,6.8,0.03,0.357
+BaggingClassifier,n_estimators: 200,0.7921,6.82,0.04,0.286
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8391,3.05,0.001,1.0
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8391,3.09,0.002,0.893
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8394,2.98,0.005,0.857
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8394,2.78,0.01,0.786
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8378,2.99,0.015,0.75
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8406,2.91,0.02,0.536
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8333,2.79,0.03,0.357
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8289,2.7,0.04,0.286
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8411,3.03,0.001,1.0
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8411,3.06,0.002,0.893
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8395,3.08,0.005,0.857
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8395,3.08,0.01,0.786
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8391,2.96,0.015,0.75
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8396,2.97,0.02,0.536
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8316,2.85,0.03,0.357
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8292,2.85,0.04,0.286
+AdaBoostClassifier,n_estimators: 50,0.8328,4.85,0.001,1.0
+AdaBoostClassifier,n_estimators: 50,0.8328,4.82,0.002,0.893
+AdaBoostClassifier,n_estimators: 50,0.8328,4.8,0.005,0.857
+AdaBoostClassifier,n_estimators: 50,0.8328,5.01,0.01,0.786
+AdaBoostClassifier,n_estimators: 50,0.8294,4.56,0.015,0.75
+AdaBoostClassifier,n_estimators: 50,0.831,4.46,0.02,0.536
+AdaBoostClassifier,n_estimators: 50,0.8269,3.81,0.03,0.357
+AdaBoostClassifier,n_estimators: 50,0.8255,3.83,0.04,0.286
+AdaBoostClassifier,n_estimators: 100,0.834,7.31,0.001,1.0
+AdaBoostClassifier,n_estimators: 100,0.834,6.99,0.002,0.893
+AdaBoostClassifier,n_estimators: 100,0.834,6.99,0.005,0.857
+AdaBoostClassifier,n_estimators: 100,0.834,7.03,0.01,0.786
+AdaBoostClassifier,n_estimators: 100,0.8319,6.86,0.015,0.75
+AdaBoostClassifier,n_estimators: 100,0.8335,6.28,0.02,0.536
+AdaBoostClassifier,n_estimators: 100,0.8285,5.29,0.03,0.357
+AdaBoostClassifier,n_estimators: 100,0.8268,5.26,0.04,0.286
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8312,4.36,0.001,1.0
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8296,4.32,0.002,0.893
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8314,4.09,0.005,0.857
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.831,4.47,0.01,0.786
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8275,4.1,0.015,0.75
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.829,4.23,0.02,0.536
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.827,4.14,0.03,0.357
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8246,3.93,0.04,0.286
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8437,4.29,0.001,1.0
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8432,4.0,0.002,0.893
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8419,3.65,0.005,0.857
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8421,3.98,0.01,0.786
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8398,4.1,0.015,0.75
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8405,4.19,0.02,0.536
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8335,3.76,0.03,0.357
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8294,4.1,0.04,0.286
