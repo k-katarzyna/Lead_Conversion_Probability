@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.compose import ColumnTransformer, make_column_transformer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import (AdaBoostClassifier, BaggingClassifier,
@@ -43,9 +44,8 @@ def collect_tests_results(models, X, y, test, preprocessors = None):
         if test == "imputation" and preprocessors is None:
             if model_name in missings_handling_models:
                 
-                preprocessor = make_column_transformer(
-                    (OneHotEncoder(), cat_features),
-                    remainder="passthrough")
+                preprocessor = make_column_transformer((OneHotEncoder(), cat_features),
+                                                       remainder="passthrough")
                 
                 pipeline = make_pipeline(preprocessor, model)
                 
@@ -61,10 +61,9 @@ def collect_tests_results(models, X, y, test, preprocessors = None):
         if test == "imputation" and preprocessors is not None:
             for imputer_name, preprocessor in preprocessors:
                 
-                preprocessor = make_column_transformer(
-                    (preprocessor, num_features),
-                    (OneHotEncoder(), cat_features),
-                    remainder = "passthrough")
+                preprocessor = make_column_transformer((preprocessor, num_features),
+                                                       (OneHotEncoder(), cat_features),
+                                                       remainder = "passthrough")
 
                 pipeline = make_pipeline(preprocessor, model)
                 
@@ -80,13 +79,12 @@ def collect_tests_results(models, X, y, test, preprocessors = None):
         if test == "encoders":
             for preprocessor in preprocessors:
                 
-                preprocessor = make_column_transformer(
-                    (SimpleImputer(strategy = "constant", 
-                                   fill_value = -1, 
-                                   add_indicator = True),
-                     num_features),
-                    (preprocessor, cat_features),
-                    remainder = "passthrough")
+                preprocessor = make_column_transformer((SimpleImputer(strategy = "constant",
+                                                                      fill_value = -1,
+                                                                      add_indicator = True),
+                                                        num_features),
+                                                       (preprocessor, cat_features),
+                                                       remainder = "passthrough")
 
                 encoder = preprocessor.transformers[1][1].__class__.__name__
                 pipeline = make_pipeline(preprocessor, model)
@@ -102,25 +100,26 @@ def collect_tests_results(models, X, y, test, preprocessors = None):
 
         if test == "feature_selection":
             
-            preprocessor = make_column_transformer(
-                (SimpleImputer(strategy = "constant",
-                               fill_value = -1,
-                               add_indicator = True),
-                 num_features),
-                (TargetEncoder(random_state = 42),
-                 cat_features),
-                remainder = "passthrough")
+            preprocessor = make_column_transformer((SimpleImputer(strategy = "constant",
+                                                                  fill_value = -1,
+                                                                  add_indicator = True),
+                                                    num_features),
+                                                   (TargetEncoder(random_state = 42),
+                                                    cat_features),
+                                                   remainder = "passthrough")
 
-            selection_thresholds = [0.001, 0.002, 0.005, 0.01, 0.015, 0.02, 0.03, 0.04]
+            selection_thresholds = [0.001, 0.0015, 0.002, 0.005, 0.01, 0.02, 0.03]
             
             for threshold in selection_thresholds:
                 
                 pipeline = make_pipeline(
                     preprocessor,
-                    SelectFromModel(estimator = RandomForestClassifier(class_weight = {1:50},
+                    SelectFromModel(estimator = 
+                                    RandomForestClassifier(class_weight = {1:50},
                                                                        min_samples_leaf = 20,
                                                                        random_state = 42,
-                                                                       n_jobs = -1), threshold = threshold),
+                                                                       n_jobs = -1),
+                                    threshold = threshold),
                     model)
 
                 result = scores(pipeline,
@@ -162,31 +161,37 @@ def scores(pipeline, X, y, model_name, model_params, test, imputation = None, en
                                 scoring = "roc_auc", 
                                 cv = cv_scheme, 
                                 n_jobs = -1)
+    
+    roc_auc = np.round(cv_results["test_score"].mean(), 4)
+    time = np.round(cv_results["fit_time"].mean(), 2)
 
     if test == "imputation":
         return {"Model": model_name,
                 "Parameters": model_params,
-                "ROC_AUC": round(cv_results["test_score"].mean(), 4),
+                "ROC_AUC": roc_auc,
                 "Imputation": imputation,
-                "Time[s]": round(cv_results["fit_time"].mean(), 2)}
+                "Time[s]": time}
 
     if test == "encoders":
         return {"Model": model_name,
                 "Parameters": model_params,
-                "ROC_AUC": round(cv_results["test_score"].mean(), 4),
+                "ROC_AUC": roc_auc,
                 "Encoder": encoder,
-                "Time[s]": round(cv_results["fit_time"].mean(), 2)}
+                "Time[s]": time}
 
     if test == "feature_selection":
 
         pipeline.fit(X, y)
+        selected = np.round(pipeline.steps[1][1].get_support().mean() * 100)
+        rejected = np.where(~pipeline.steps[1][1].get_support())[0]
         
         return {"Model": model_name,
                 "Parameters": model_params,
-                "ROC_AUC": round(cv_results["test_score"].mean(), 4),
-                "Threshold": round(threshold, 3), 
-                "Selected_features": round(pipeline.steps[1][1].get_support().mean(), 3),
-                "Time[s]": round(cv_results["fit_time"].mean(), 2)}
+                "ROC_AUC": roc_auc,
+                "Threshold": np.round(threshold, 4), 
+                "Selected[%]": selected,
+                "Rejected[idx]": rejected,
+                "Time[s]": time}
 
 
 def create_results_dataframe(*args):
@@ -207,3 +212,38 @@ def create_results_dataframe(*args):
     df.set_index("Model", inplace=True)
 
     return df
+
+
+def display_results(dataframe, column):
+    """
+    Display summary statistics for a DataFrame grouped by a specified column.
+
+    This function takes a DataFrame and a column name as input and computes summary statistics
+    (count, mean, min, max) for two specified columns ("ROC_AUC" and "Time[s]") after grouping
+    the DataFrame by the specified column. Returns a styled DataFrame with 
+    background gradient applied to the "mean_roc_auc," "max_roc_auc," "mean_time[s]," and "max_time[s]" columns.
+
+    Parameters:
+    -----------
+    dataframe : pandas.DataFrame
+        The input DataFrame containing the data to be summarized.
+    column : str
+        The name of the column by which the DataFrame should be grouped.
+
+    Returns:
+    --------
+    pandas.io.formats.style.Styler
+        A styled DataFrame with summary statistics and background gradient for specific columns.
+    """
+    results = (dataframe.groupby(column)
+               .agg(
+                   {"ROC_AUC": [np.size, np.mean, np.min, np.max],
+                    "Time[s]": [np.mean, np.min, np.max]
+                    })
+               .set_axis(["count", "mean_roc_auc", "min_roc_auc", "max_roc_auc", "mean_time[s]", "min_time[s]", "max_time[s]"],
+                         axis = 1)
+               .round(4))
+
+    results[["mean_time[s]"]] = results[["mean_time[s]"]].round(2)
+
+    return results.style.background_gradient(subset = ["mean_roc_auc", "max_roc_auc", "mean_time[s]", "max_time[s]"])
