@@ -7,14 +7,21 @@ biggest_cities = ["Bangalore", "Delhi", "Chennai", "Hyderabad", "Mumbai", "Pune"
 
 def data_preparing_v1(data):
     """
-    Preparing the data. The return is the preprocessed DataFrame with modified and transformed columns.
+    Preprocess and transform the input DataFrame.
+
+    Args:
+        data (pd.DataFrame): The input DataFrame containing raw data.
+
+    Returns:
+        pd.DataFrame: A preprocessed DataFrame with modified and transformed columns.
     """
     data = data.copy()
 
-    data.drop("ID", axis=1, inplace=True)
+    data.drop("ID", axis = 1, inplace=True)
     data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]] = data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]].fillna(0)
 
-    data["City"] = data["City"].apply(lambda x: "Y" if x in biggest_cities else "N" if pd.notna(x) else "Unknown")
+    data["City"] = data["City"].apply(
+        lambda x: "Y" if x in biggest_cities else "N" if pd.notna(x) else x)
 
     data["DOB"] = data["DOB"].apply(lambda x: int(x[-2:]))
 
@@ -26,7 +33,7 @@ def data_preparing_v1(data):
 
     for feature, value in zip(["Var1", "Var2", "Source"], [1000] * 3):
         rare_values = data[feature].value_counts()[data[feature].value_counts() < value].index.tolist()
-        data[feature].replace(rare_values, "Others", inplace=True)
+        data[feature].replace(rare_values, "Others", inplace = True)
 
     data.rename(columns={"DOB": "Year_Of_Birth",
                          "Lead_Creation_Date": "Lead_Creation_Day",

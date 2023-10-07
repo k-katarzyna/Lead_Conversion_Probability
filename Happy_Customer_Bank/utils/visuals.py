@@ -6,7 +6,7 @@ import seaborn as sns
 plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
 
-def missings_plot(data, return_features=False):
+def missings_plot(data, return_features = False):
     """
     Creates horizontal bar plots showing the number of missing values and zero values for selected features.
 
@@ -28,23 +28,27 @@ def missings_plot(data, return_features=False):
     ax1.set_xscale("log")
 
     for number, feature in zip(number_of_nan_values, features_with_nan):
-        ax1.annotate(number, (number, feature),
-                     fontsize=10,
-                     va="center", ha="center",
-                     bbox=dict(boxstyle="round", fc="aliceblue"))
+        ax1.annotate(number,(number, feature),
+                     fontsize = 10,
+                     va = "center", 
+                     ha = "center",
+                     bbox = dict(boxstyle="round", 
+                               fc = "aliceblue"))
 
     features_with_zeros = ["Monthly_Income", "Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI", "Employer_Name"]
     number_of_zero_values = ((data[features_with_zeros] == 0) | (data[features_with_zeros] == "0")).sum()
 
-    ax2.barh(features_with_zeros, number_of_zero_values, color="lightseagreen")
+    ax2.barh(features_with_zeros, number_of_zero_values, color = "lightseagreen")
     ax2.set_title("Zero values")
     ax2.set_xscale("log")
 
     for number, feature in zip(number_of_zero_values, features_with_zeros):
         ax2.annotate(number, (number, feature),
-                     fontsize=10,
-                     va="center", ha="center",
-                     bbox=dict(boxstyle="round", fc="azure"))
+                     fontsize = 10,
+                     va = "center",
+                     ha = "center",
+                     bbox = dict(boxstyle = "round",
+                               fc = "azure"))
 
     plt.tight_layout()
     plt.show()
@@ -53,13 +57,24 @@ def missings_plot(data, return_features=False):
         return features_with_nan
 
 
-def grid_of_hists(n_rows, n_cols, features, data):
-	
-    """ 
-    Creates a grid of histograms. Inputs are: number of rows, number of columns, list of feature names, and dataframe. 
+def grid_of_hists(n_rows, n_cols, data, features = None):	
+    """
+    Create a grid of histograms.
+
+    Args:
+        n_rows (int): Number of rows in the grid.
+        n_cols (int): Number of columns in the grid.
+        data (pd.DataFrame): The dataframe containing the data for plotting.
+        features (list, optional): List of feature names to plot. 
+            If not provided, it selects numeric features with more than 2 unique values.
+
     Number of rows and columns must correspond with the number of features.
     """
-	
+
+    if features is None:
+        features = [feature for feature in data.select_dtypes([int, float]).columns 
+                    if data[feature].nunique() > 2]
+    
     width = n_cols * 4
     height = n_rows * 3
     
@@ -69,8 +84,8 @@ def grid_of_hists(n_rows, n_cols, features, data):
         plt.subplot(n_rows, n_cols, i + 1)
         plt.hist(data[feature], color="steelblue")
         plt.title(feature)
-        plt.locator_params(axis='x', nbins=4)
-        plt.locator_params(axis='y', nbins=4)
+        plt.locator_params(axis = 'x', nbins = 4)
+        plt.locator_params(axis = 'y', nbins = 4)
         
         if feature in ["Monthly_Income", "Existing_EMI"]:
             plt.yscale("log")
@@ -79,22 +94,33 @@ def grid_of_hists(n_rows, n_cols, features, data):
     plt.show()
 
 
-def countplot(*args, data):
+def countplots(*args, data):
+    """
+    Create countplots for one or more categorical features.
+
+    Args:
+        *args (str): One or more feature names to create countplots for.
+        data (pd.DataFrame): The dataframe containing the data to visualize.
+    """
 	
     for feature in args:
         plt.figure(figsize=(15, 3))
         order = data[feature].value_counts().index
-        ax = sns.countplot(x=feature, data=data, order=order, palette="viridis")
+        ax = sns.countplot(x = feature,
+                           data = data,
+                           order = order,
+                           palette = "viridis")
+        
         ax.set_yscale("log")
         plt.title(f'Distribution of {feature}')
 
         if len(str(data[feature].unique()[0])) >= 4:
-            plt.xticks(rotation=45)
+            plt.xticks(rotation = 45)
 
         for p in ax.patches:
             height = p.get_height()
             ax.annotate(f'{height:.0f}', (p.get_x() + p.get_width() / 2., height),
-                        ha='center', va='bottom', fontsize=10)
+                        ha = 'center', va = 'bottom', fontsize = 10)
 
         plt.tight_layout()
         plt.show()
