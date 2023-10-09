@@ -1,41 +1,33 @@
 Model,Parameters,ROC_AUC,Encoder,Time[s]
-DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.7003,OneHotEncoder,0.72
-DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6833,OrdinalEncoder,0.4
-DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6789,TargetEncoder,0.51
-DecisionTreeClassifier,"class_weight: None, min_samples_leaf: 50",0.6877,MultiTaskEncoder,0.57
-DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8072,OneHotEncoder,0.5
-DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8034,OrdinalEncoder,0.34
-DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8083,TargetEncoder,0.42
-DecisionTreeClassifier,"class_weight: {1: 50}, min_samples_leaf: 100",0.8046,MultiTaskEncoder,0.48
-BaggingClassifier,n_estimators: 100,0.7764,OneHotEncoder,11.93
-BaggingClassifier,n_estimators: 100,0.7792,OrdinalEncoder,7.92
-BaggingClassifier,n_estimators: 100,0.7803,TargetEncoder,9.47
-BaggingClassifier,n_estimators: 100,0.7783,MultiTaskEncoder,8.27
-BaggingClassifier,n_estimators: 200,0.8041,OneHotEncoder,12.89
-BaggingClassifier,n_estimators: 200,0.8044,OrdinalEncoder,8.88
-BaggingClassifier,n_estimators: 200,0.8009,TargetEncoder,10.33
-BaggingClassifier,n_estimators: 200,0.8025,MultiTaskEncoder,8.07
-HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8424,OneHotEncoder,1.35
-HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8392,OrdinalEncoder,1.03
-HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8391,TargetEncoder,1.11
-HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8385,MultiTaskEncoder,1.19
-HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8425,OneHotEncoder,1.61
-HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8409,OrdinalEncoder,1.08
-HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8411,TargetEncoder,1.12
-HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 20",0.8434,MultiTaskEncoder,1.25
-AdaBoostClassifier,n_estimators: 50,0.8332,OneHotEncoder,4.77
-AdaBoostClassifier,n_estimators: 50,0.8307,OrdinalEncoder,3.21
-AdaBoostClassifier,n_estimators: 50,0.8328,TargetEncoder,3.5
-AdaBoostClassifier,n_estimators: 50,0.8305,MultiTaskEncoder,2.5
-AdaBoostClassifier,n_estimators: 100,0.8339,OneHotEncoder,9.08
-AdaBoostClassifier,n_estimators: 100,0.8329,OrdinalEncoder,6.41
-AdaBoostClassifier,n_estimators: 100,0.834,TargetEncoder,6.91
-AdaBoostClassifier,n_estimators: 100,0.8333,MultiTaskEncoder,4.75
-RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8353,OneHotEncoder,2.54
-RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8312,OrdinalEncoder,2.38
-RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8312,TargetEncoder,2.72
-RandomForestClassifier,"class_weight: None, min_samples_leaf: 10, n_estimators: 100",0.8301,MultiTaskEncoder,2.32
-RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8427,OneHotEncoder,2.44
-RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8374,OrdinalEncoder,2.28
-RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8437,TargetEncoder,2.51
-RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 100",0.8405,MultiTaskEncoder,2.14
+AdaBoostClassifier,n_estimators: 50,0.8314,OneHotEncoder,3.62
+AdaBoostClassifier,n_estimators: 50,0.8302,OrdinalEncoder,2.16
+AdaBoostClassifier,n_estimators: 50,0.8315,TargetEncoder,2.4
+AdaBoostClassifier,n_estimators: 50,0.8297,MultiTaskEncoder,2.18
+AdaBoostClassifier,n_estimators: 100,0.8323,OneHotEncoder,7.06
+AdaBoostClassifier,n_estimators: 100,0.8315,OrdinalEncoder,4.16
+AdaBoostClassifier,n_estimators: 100,0.8327,TargetEncoder,4.66
+AdaBoostClassifier,n_estimators: 100,0.8313,MultiTaskEncoder,4.23
+BaggingClassifier,"n_estimators: 100, max_features: 1.0",0.7759,OneHotEncoder,8.42
+BaggingClassifier,"n_estimators: 100, max_features: 1.0",0.7733,OrdinalEncoder,5.2
+BaggingClassifier,"n_estimators: 100, max_features: 1.0",0.7716,TargetEncoder,6.29
+BaggingClassifier,"n_estimators: 100, max_features: 1.0",0.776,MultiTaskEncoder,5.38
+BaggingClassifier,"n_estimators: 200, max_features: 0.5",0.8339,OneHotEncoder,8.69
+BaggingClassifier,"n_estimators: 200, max_features: 0.5",0.8319,OrdinalEncoder,6.19
+BaggingClassifier,"n_estimators: 200, max_features: 0.5",0.8378,TargetEncoder,6.67
+BaggingClassifier,"n_estimators: 200, max_features: 0.5",0.8341,MultiTaskEncoder,5.87
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8406,OneHotEncoder,1.48
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8417,OrdinalEncoder,0.87
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8408,TargetEncoder,0.98
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8389,MultiTaskEncoder,1.16
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8433,OneHotEncoder,1.54
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8399,OrdinalEncoder,0.96
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8428,TargetEncoder,1.0
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8429,MultiTaskEncoder,1.17
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 5, n_estimators: 100, max_features: sqrt",0.828,OneHotEncoder,2.1
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 5, n_estimators: 100, max_features: sqrt",0.822,OrdinalEncoder,1.89
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 5, n_estimators: 100, max_features: sqrt",0.824,TargetEncoder,2.03
+RandomForestClassifier,"class_weight: None, min_samples_leaf: 5, n_estimators: 100, max_features: sqrt",0.8254,MultiTaskEncoder,1.96
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 200, max_features: 0.5",0.8428,OneHotEncoder,4.51
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 200, max_features: 0.5",0.8396,OrdinalEncoder,3.73
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 200, max_features: 0.5",0.8446,TargetEncoder,4.09
+RandomForestClassifier,"class_weight: {1: 50}, min_samples_leaf: 20, n_estimators: 200, max_features: 0.5",0.839,MultiTaskEncoder,3.73
