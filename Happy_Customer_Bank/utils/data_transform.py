@@ -18,7 +18,7 @@ def data_preparing_v1(data):
     """
     data = data.copy()
 
-    data.drop(["ID", "Lead_Creation_Date", "Device_Type", "Salary_Account"], axis = 1, inplace = True)
+    data.drop(["ID", "Lead_Creation_Date", "Device_Type", "Salary_Account", "LoggedIn"], axis = 1, inplace = True)
     data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]] = data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]].fillna(0)
 
     data["City"] = data["City"].apply(
@@ -37,7 +37,18 @@ def data_preparing_v1(data):
                          "Employer_Name": "Employer_Provided"},
                 inplace=True)
 
-    return data
+    X = data.drop("Disbursed", axis = 1)
+    y = data.Disbursed
+
+    return X, y
+
+
+def data_preparing_v2(data):
+    
+    X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account", "Device_Type","LoggedIn", "Disbursed"], axis = 1)
+    y = data.Disbursed
+
+    return X, y
 
 
 class FrequencyEncoder(BaseEstimator, TransformerMixin):
@@ -54,10 +65,8 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
         The threshold below which categories are considered rare when grouping. Categories with a frequency
         less than this threshold will be grouped into a single "Rare" category.
     group_only : bool, default=False
-        If used, the 'group_rare' parameter must also be set to true.
         If True, the transformer will only perform rare category grouping and return the transformed column(s)
-        without additional encoding. If set to False, the column(s) will be both grouped (if group_rare is True)
-        and encoded.
+        without additional encoding. If set to False, the column(s) will be both grouped and encoded.
 
     Attributes:
     -----------
@@ -107,7 +116,7 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
                 if X_transformed[col].isna().any():
                     X_transformed[col] = X_transformed[col].fillna(0).astype(int)
             
-        return pd.DataFrame(X_transformed)
+        return X_transformed
 
 
 class MixedImputer(BaseEstimator, TransformerMixin):
@@ -156,7 +165,7 @@ class MixedImputer(BaseEstimator, TransformerMixin):
             pass
             
         return X_transformed
-
+        
 
 class DateEncoder(BaseEstimator, TransformerMixin):
     
@@ -223,3 +232,99 @@ class ZeroOneEncoder(BaseEstimator, TransformerMixin):
 
         return transformed
 
+
+class ColumnRemover(BaseEstimator, TransformerMixin):
+    
+    """
+    A transformer for removing specified features based on the results of feature importance tests.
+    The feature names to drop are specified as hard-coded strings based on the names used
+    in the transformation pipeline. For example, "featureunion__vars__Var2" is a valid feature name.
+
+    Parameters:
+    -----------
+    to_drop (int): The number of least important features to drop (0-6). For example, if to_drop=2,
+                  it will drop the two least important features.
+
+    """
+
+    def __init__(self, to_drop = 0):
+        self.to_drop = to_drop
+
+    def fit(self, X, y = None):   
+        return self
+
+    def transform(self, X):
+
+        transformed = X.copy()
+
+        if self.to_drop == 1:
+            transformed.drop("featureunion__vars__Var2", 
+                             axis = 1, inplace = True)
+
+        if self.to_drop == 2:
+            transformed.drop(["featureunion__vars__Var2", 
+                              "featureunion__remainder__Mobile_Verified"], 
+                             axis = 1, inplace = True)
+
+        if self.to_drop == 3:
+            
+            try:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__Loan_Tenure_Applied"], 
+                                 axis = 1, inplace = True) # Loan_Tenure_Applied can be already removed by MixedImputer
+            except:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified"], 
+                                 axis = 1, inplace = True)
+                
+        if self.to_drop == 4:
+
+            try:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__Loan_Tenure_Applied", 
+                                  "pipeline__EMI_Loan_Submitted"], 
+                                 axis = 1, inplace = True)
+            except:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__EMI_Loan_Submitted"], 
+                                 axis = 1, inplace = True)
+
+        if self.to_drop == 5:
+
+            try:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__Loan_Tenure_Applied", 
+                                  "pipeline__EMI_Loan_Submitted", 
+                                  "featureunion__vars__Var1"], 
+                                 axis = 1, inplace = True)
+            except:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__EMI_Loan_Submitted", 
+                                  "featureunion__vars__Var1"], 
+                                 axis = 1, inplace = True)
+
+        if self.to_drop == 6:
+
+            try:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__Loan_Tenure_Applied", 
+                                  "pipeline__EMI_Loan_Submitted", 
+                                  "featureunion__vars__Var1", 
+                                  "pipeline__Interest_Rate"], 
+                                 axis = 1, inplace = True)
+            except:
+                transformed.drop(["featureunion__vars__Var2", 
+                                  "featureunion__remainder__Mobile_Verified", 
+                                  "pipeline__EMI_Loan_Submitted", 
+                                  "featureunion__vars__Var1", 
+                                  "pipeline__Interest_Rate"], 
+                                 axis = 1, inplace = True)
+
+        return transformed
+            
