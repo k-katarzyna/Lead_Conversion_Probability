@@ -1,19 +1,22 @@
 import pandas as pd
 import numpy as np
 from sklearn.compose import make_column_transformer
-from sklearn.ensemble import (AdaBoostClassifier, BaggingClassifier,
-                             HistGradientBoostingClassifier, RandomForestClassifier)
-from sklearn.experimental import enable_iterative_imputer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from sklearn.feature_selection import SelectFromModel
+from warnings import filterwarnings
+filterwarnings("ignore")
+
 
 cv_scheme = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 42)
 
-def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_search = None):
+
+def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_search = None, feat_sel_estimator = None):
+    
     """
     Collects test results for different machine learning models.
 
@@ -24,29 +27,37 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
         test (str): Type of test to perform, either "imputation", "cat_encoding", "feature_selection", "searching_params",.
         preprocessors (list): List of preprocessors.
         grid_search (tuple): (model, param_grid), only for "searching_params" test.
+        feat_sel_estimator: estimator for feature selection test
 
     Returns:
         list: List of dictionaries containing test results.
     """
 
-    num_features = X.select_dtypes(float, int).columns
-    cat_features = X.select_dtypes(object).columns
+    num_features = X.select_dtypes("number").columns
+    cat_features = X.select_dtypes("object").columns
 
     general_preprocessor = make_column_transformer((SimpleImputer(strategy = "constant",
                                                                   fill_value = -1),
                                                     num_features),
                                                    (TargetEncoder(random_state = 42),
-                                                    cat_features),
-                                                    remainder = "passthrough")
+                                                    cat_features))
 
     if models is not None:
 
         results = []
-        params_to_save = ["class_weight", "min_samples_leaf", "n_estimators", "max_features"]
-        missings_handling_models = ["BaggingClassifier", "HistGradientBoostingClassifier"]
+        params_to_save = ["n_estimators", "class_weight", "min_samples_leaf", "max_samples"]
+        missings_handling_models = ["BaggingClassifier", "HistGradientBoostingClassifier", "BalancedBagging_UnderSampling", "BalancedBagging_OverSampling"]
     
         for model in models:
             model_name = model.__class__.__name__
+            
+            if model_name == "BalancedBaggingClassifier":
+                if getattr(model, "sampler").__class__.__name__ == "RandomUnderSampler":
+                    model_name = "BalancedBagging_UnderSampling"
+                else:
+                    model_name = "BalancedBagging_OverSampling"
+                
+                
             model_params = ", ".join([f"{param}: {getattr(model, param)}"
                                       for param in params_to_save
                                       if hasattr(model, param)])
@@ -72,8 +83,7 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
                 for imputer_name, preprocessor in preprocessors:
                     
                     preprocessor = make_column_transformer((preprocessor, num_features),
-                                                           (OneHotEncoder(), cat_features),
-                                                           remainder = "passthrough")
+                                                           (OneHotEncoder(), cat_features))
     
                     pipeline = make_pipeline(preprocessor, model)
                     
@@ -92,8 +102,7 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
                     preprocessor = make_column_transformer((SimpleImputer(strategy = "constant",
                                                                           fill_value = -1),
                                                             num_features),
-                                                           (preprocessor, cat_features),
-                                                           remainder = "passthrough")
+                                                           (preprocessor, cat_features))
     
                     encoder = preprocessor.transformers[1][1].__class__.__name__
                     pipeline = make_pipeline(preprocessor, model)
@@ -111,18 +120,13 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
         
                 preprocessor = general_preprocessor
 
-                selection_thresholds = [0.005, 0.007, 0.01, 0.012, 0.014, 0.015, 0.017, 0.019, 0.024]
+                selection_thresholds = [0.01, 0.015, 0.016, 0.0165, 0.017, 0.018, 0.02, 0.025]
                 
                 for threshold in selection_thresholds:
                     
                     pipeline = make_pipeline(
                         preprocessor,
-                        SelectFromModel(estimator = RandomForestClassifier(n_estimators = 100,
-                                                                           class_weight = {1:75}, 
-                                                                           min_samples_leaf = 50,
-                                                                           max_features = None,
-                                                                           max_samples = 0.3,
-                                                                           random_state = 42, n_jobs = -1),
+                        SelectFromModel(estimator = feat_sel_estimator,
                                         threshold = threshold),
                         model)
     
@@ -160,10 +164,11 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
         best_params = optimizer.best_params_
         best_params["best_auc_score"] = np.round(optimizer.best_score_, 4)
         
-        return best_params
+        return best_params, optimizer.best_estimator_
 
 
 def scores(pipeline, X, y, model_name, model_params, test, imputation = None, encoder = None, threshold = None):
+    
     """
     Calculates cross validation scores and prepares a dictionary with the results.
 
@@ -174,9 +179,9 @@ def scores(pipeline, X, y, model_name, model_params, test, imputation = None, en
         y (pd.Series): Target labels.
         model_name (str): Name of the machine learning model.
         model_params (str): Model parameters as a formatted string.
-        test (str): Type of test, either "imputation", "encoders", "feature_selection".
+        test (str): Type of test, either "imputation", "cat_encoding", "feature_selection".
         imputation (str): Imputation method (only for "imputation" test).
-        encoder (str): Encoder used (only for "encoders" test).
+        encoder (str): Encoder used (only for "cat_encoding" test).
         threshold (float): Feature selection threshold (only for "feature_selection" test).
 
     Returns:
@@ -191,6 +196,7 @@ def scores(pipeline, X, y, model_name, model_params, test, imputation = None, en
     
     roc_auc = np.round(cv_results["test_score"].mean(), 4)
     time = np.round((cv_results["fit_time"] + cv_results["score_time"]).mean(), 2)
+
 
     if test == "imputation":
         return {"Model": model_name,
@@ -222,6 +228,7 @@ def scores(pipeline, X, y, model_name, model_params, test, imputation = None, en
 
 
 def create_results_dataframe(*args):
+    
     """
     Create a results DataFrame from a list or lists of dictionaries.
 
@@ -231,6 +238,7 @@ def create_results_dataframe(*args):
     Returns:
         pd.DataFrame: A DataFrame containing the results with the model names as the index.
     """
+    
     if len(args) == 1:
         return pd.DataFrame(args[0])
     elif len(args) > 1:
@@ -238,6 +246,7 @@ def create_results_dataframe(*args):
 
 
 def summarize_results(dataframe, column_to_group_by):
+    
     """
     Display summary statistics for a DataFrame grouped by a specified column.
 
