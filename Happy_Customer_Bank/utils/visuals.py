@@ -7,6 +7,7 @@ plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
 
 def missings_plot(data, return_features = False):
+    
     """
     Creates horizontal bar plots showing the number of missing values and zero values for selected features.
 
@@ -32,8 +33,8 @@ def missings_plot(data, return_features = False):
                      fontsize = 10,
                      va = "center", 
                      ha = "center",
-                     bbox = dict(boxstyle="round", 
-                               fc = "aliceblue"))
+                     bbox = dict(boxstyle="round",
+                                 fc = "aliceblue"))
 
     features_with_zeros = ["Monthly_Income", "Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI", "Employer_Name"]
     number_of_zero_values = ((data[features_with_zeros] == 0) | (data[features_with_zeros] == "0")).sum()
@@ -48,7 +49,7 @@ def missings_plot(data, return_features = False):
                      va = "center",
                      ha = "center",
                      bbox = dict(boxstyle = "round",
-                               fc = "azure"))
+                                 fc = "azure"))
 
     plt.tight_layout()
     plt.show()
@@ -57,9 +58,10 @@ def missings_plot(data, return_features = False):
         return features_with_nan
 
 
-def grid_of_hists(n_rows, n_cols, data, features = None):	
+def histplots_grid(n_rows, n_cols, data, features = None):	
+    
     """
-    Create a grid of histograms.
+    Creates a grid of histograms.
 
     Args:
         n_rows (int): Number of rows in the grid.
@@ -95,8 +97,9 @@ def grid_of_hists(n_rows, n_cols, data, features = None):
 
 
 def countplots(*args, data):
+    
     """
-    Create countplots for one or more categorical features.
+    Creates countplots for one or more categorical features.
 
     Args:
         *args (str): One or more feature names to create countplots for.
@@ -124,3 +127,30 @@ def countplots(*args, data):
 
         plt.tight_layout()
         plt.show()
+
+
+def feature_importance_plot(importances, feature_names, title="Feature Importances"):
+    
+    """
+    Creates horizontal barplot for feature importances.
+
+    Args:
+        importances (np.array): Feature importances values.
+        feature_names (list): Feature names for plotting.
+    """
+    
+    sorted_indices = importances.argsort()
+    sorted_names = [feature_names[i] for i in sorted_indices]
+    sorted_importances = importances[sorted_indices]
+
+    plt.figure(figsize=(8, 6))
+    plt.barh(range(len(sorted_names)), 
+             sorted_importances, 
+             align="center", color = "steelblue")
+    
+    plt.yticks(range(len(sorted_names)), sorted_names)
+    plt.xlabel("Feature Importance")
+    plt.ylabel("Feature Name")
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
