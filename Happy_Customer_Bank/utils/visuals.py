@@ -143,7 +143,7 @@ def feature_importance_plot(importances, feature_names, title="Feature Importanc
     sorted_names = [feature_names[i] for i in sorted_indices]
     sorted_importances = importances[sorted_indices]
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(7, 6))
     plt.barh(range(len(sorted_names)), 
              sorted_importances, 
              align="center", color = "steelblue")

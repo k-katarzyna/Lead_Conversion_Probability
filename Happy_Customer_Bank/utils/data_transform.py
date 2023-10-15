@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from warnings import filterwarnings
+filterwarnings("ignore")
 
 # based on: https://www.loomsolar.com/blogs/collections/list-of-cities-in-india
 biggest_cities = ["Bangalore", "Delhi", "Chennai", "Hyderabad", "Mumbai", "Pune", "Kolkata", "Ahmedabad"]
@@ -51,22 +53,21 @@ def data_preparing_v2(data):
     return X, y
 
 
-class FrequencyEncoder(BaseEstimator, TransformerMixin):
+class RareAggregator(BaseEstimator, TransformerMixin):
     
     """
     Transformer for encoding categorical features and with rare categories grouping.
 
-    This transformer encodes categories by assigning consecutive numerical values in the range (number of categories, 1) based on the frequency of each category. 
-    If NaNs are present, they will be replaced by -1.
+    This transformer groups rare categories within categorical features. Categories with a frequency
+    less than the specified threshold will be grouped into a single "Others" category.
 
     Parameters:
     -----------
-    rare_threshold : int, default=1000
+    threshold : int, default=1000
         The threshold below which categories are considered rare when grouping. Categories with a frequency
-        less than this threshold will be grouped into a single "Rare" category.
-    group_only : bool, default=False
-        If True, the transformer will only perform rare category grouping and return the transformed column(s)
-        without additional encoding. If set to False, the column(s) will be both grouped and encoded.
+        less than this threshold will be grouped into a single "Others" category.
+    group_by : bool, default="frequency"
+        If "frequency," the transformer will perform rare category grouping based on frequency.
 
     Attributes:
     -----------
@@ -78,12 +79,10 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self,
-                 rare_threshold = 1000, 
-                 group_only = False,
+                 threshold = 1000, 
                  group_by = "frequency"):
 
-        self.rare_threshold = rare_threshold
-        self.group_only = group_only
+        self.threshold = threshold
         self.group_by = group_by
 
     def fit(self, X, y = None):
@@ -93,7 +92,7 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
             
         for col in self.multi_level_columns_:
             category_counts = X[col].value_counts()
-            self.rare_categories_[col] = category_counts.index[category_counts <= self.rare_threshold]
+            self.rare_categories_[col] = category_counts.index[category_counts <= self.threshold]
 
         return self
 
@@ -104,17 +103,6 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
             X_transformed[col] = X_transformed[col].apply(
                 lambda x: "Others" if x in self.rare_categories_[col] else x
             )
-                
-        if not self.group_only:
-                
-            for col in X_transformed.columns:
-                category_counts = X_transformed[col].value_counts()
-                category_mapping = {category: len(category_counts) - i
-                                    for i, category in enumerate(category_counts.index)}
-                X_transformed[col] = X_transformed[col].map(category_mapping)
-    
-                if X_transformed[col].isna().any():
-                    X_transformed[col] = X_transformed[col].fillna(0).astype(int)
             
         return X_transformed
 
@@ -122,8 +110,8 @@ class FrequencyEncoder(BaseEstimator, TransformerMixin):
 class MixedImputer(BaseEstimator, TransformerMixin):
     
     """
-    Transformer for imputing missing values. It can handle both simple imputation, where missing values are filled with specified values,
-    and imputation based on a compression of applied and submitted loan features.
+    Transformer for imputing missing values. It can handle both simple imputation, where missing values are filled
+    with specified values, and imputation based on a compression of applied and submitted loan features.
 
     Parameters:
     -----------
@@ -207,13 +195,18 @@ class DateEncoder(BaseEstimator, TransformerMixin):
 class ZeroOneEncoder(BaseEstimator, TransformerMixin):
 
     """
-    Transformer for categorical features with missing values, where only whether the value is defined or not may be relevant.
-    It automatically detects columns with NaN values.
+    Transformer for categorical features with missing values, where only whether the value is defined or
+    not may be relevant. It automatically detects columns with NaN values.
     It replaces NaN with 0 and non-NaN values with 1.
 
     Parameters:
     -----------
     None
+
+    Attributes:
+    -----------
+    columns_with_nan_ : list
+        A list of column names containing missing values.
     """
 
     def fit(self, X, y = None):
@@ -246,7 +239,7 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
                   it will drop the two least important features.
 
     """
-
+    
     def __init__(self, to_drop = 0):
         self.to_drop = to_drop
 
@@ -258,72 +251,72 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
         transformed = X.copy()
 
         if self.to_drop == 1:
-            transformed.drop("featureunion__vars__Var2", 
+            transformed.drop("cat_union__vars__Var2", 
                              axis = 1, inplace = True)
 
         if self.to_drop == 2:
-            transformed.drop(["featureunion__vars__Var2", 
-                              "featureunion__remainder__Mobile_Verified"], 
+            transformed.drop(["cat_union__vars__Var2", 
+                              "cat_union__remainder__Mobile_Verified"], 
                              axis = 1, inplace = True)
 
         if self.to_drop == 3:
             
             try:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__Loan_Tenure_Applied"], 
-                                 axis = 1, inplace = True) # Loan_Tenure_Applied can be already removed by MixedImputer
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__Loan_Tenure_Applied"], # Loan_Tenure_Applied can be already removed by MixedImputer
+                                 axis = 1, inplace = True)
             except:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified"], 
                                  axis = 1, inplace = True)
                 
         if self.to_drop == 4:
 
             try:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__Loan_Tenure_Applied", 
-                                  "pipeline__EMI_Loan_Submitted"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__Loan_Tenure_Applied", 
+                                  "num_pipe__EMI_Loan_Submitted"], 
                                  axis = 1, inplace = True)
             except:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__EMI_Loan_Submitted"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__EMI_Loan_Submitted"], 
                                  axis = 1, inplace = True)
 
         if self.to_drop == 5:
 
             try:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__Loan_Tenure_Applied", 
-                                  "pipeline__EMI_Loan_Submitted", 
-                                  "featureunion__vars__Var1"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__Loan_Tenure_Applied", 
+                                  "num_pipe__EMI_Loan_Submitted", 
+                                  "cat_union__vars__Var1"], 
                                  axis = 1, inplace = True)
             except:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__EMI_Loan_Submitted", 
-                                  "featureunion__vars__Var1"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__EMI_Loan_Submitted", 
+                                  "cat_union__vars__Var1"], 
                                  axis = 1, inplace = True)
 
         if self.to_drop == 6:
 
             try:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__Loan_Tenure_Applied", 
-                                  "pipeline__EMI_Loan_Submitted", 
-                                  "featureunion__vars__Var1", 
-                                  "pipeline__Interest_Rate"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__Loan_Tenure_Applied", 
+                                  "num_pipe__EMI_Loan_Submitted", 
+                                  "cat_union__vars__Var1", 
+                                  "num_pipe__Interest_Rate"], 
                                  axis = 1, inplace = True)
             except:
-                transformed.drop(["featureunion__vars__Var2", 
-                                  "featureunion__remainder__Mobile_Verified", 
-                                  "pipeline__EMI_Loan_Submitted", 
-                                  "featureunion__vars__Var1", 
-                                  "pipeline__Interest_Rate"], 
+                transformed.drop(["cat_union__vars__Var2", 
+                                  "cat_union__remainder__Mobile_Verified", 
+                                  "num_pipe__EMI_Loan_Submitted", 
+                                  "cat_union__vars__Var1", 
+                                  "num_pipe__Interest_Rate"], 
                                  axis = 1, inplace = True)
 
         return transformed

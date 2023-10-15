@@ -4,18 +4,18 @@ from sklearn.compose import make_column_transformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV
+from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from sklearn.feature_selection import SelectFromModel
 from warnings import filterwarnings
 filterwarnings("ignore")
+import joblib
 
 
 cv_scheme = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 42)
 
-
-def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_search = None, feat_sel_estimator = None):
+def collect_tests_results(X, y, test, models = None, preprocessors = None, param_grid = None, feat_sel_estimator = None):
     
     """
     Collects test results for different machine learning models.
@@ -24,9 +24,9 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
         models (list): List of models to evaluate.
         X (pd.DataFrame): Input data.
         y (pd.Series): Target labels.
-        test (str): Type of test to perform, either "imputation", "cat_encoding", "feature_selection", "searching_params",.
+        test (str): Type of test to perform, either "imputation", "cat_encoding", "grid_search", "randomized_search",.
         preprocessors (list): List of preprocessors.
-        grid_search (tuple): (model, param_grid), only for "searching_params" test.
+        search (tuple): (model, param_grid), only for "grid_search" and "randomized_search" test.
         feat_sel_estimator: estimator for feature selection test
 
     Returns:
@@ -46,7 +46,6 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
 
         results = []
         params_to_save = ["n_estimators", "class_weight", "min_samples_leaf", "max_samples"]
-        missings_handling_models = ["BaggingClassifier", "HistGradientBoostingClassifier", "BalancedBagging_UnderSampling", "BalancedBagging_OverSampling"]
     
         for model in models:
             model_name = model.__class__.__name__
@@ -61,50 +60,38 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
             model_params = ", ".join([f"{param}: {getattr(model, param)}"
                                       for param in params_to_save
                                       if hasattr(model, param)])
+
     
-            if test == "imputation" and preprocessors is None:
-                if model_name in missings_handling_models:
-                    
-                    preprocessor = make_column_transformer((OneHotEncoder(), cat_features),
-                                                           remainder="passthrough")
-                    
-                    pipeline = make_pipeline(preprocessor, model)
-                    
-                    result = scores(pipeline,
-                                    X, y, 
-                                    model_name, 
-                                    model_params, 
-                                    test = test, 
-                                    imputation = "none")
+            if test == "imputation":
+
+                try:         
+                    for imputer_name, preprocessor in preprocessors:
     
-                    results.append(result)
+                        preprocessor = make_column_transformer((preprocessor, num_features),
+                                                               (OneHotEncoder(), cat_features))
+        
+                        pipeline = make_pipeline(preprocessor, model)
+                        
+                        result = scores(pipeline,
+                                        X, y, 
+                                        model_name, 
+                                        model_params, 
+                                        test = test, 
+                                        imputation = imputer_name)
     
-            if test == "imputation" and preprocessors is not None:
-                for imputer_name, preprocessor in preprocessors:
-                    
-                    preprocessor = make_column_transformer((preprocessor, num_features),
-                                                           (OneHotEncoder(), cat_features))
-    
-                    pipeline = make_pipeline(preprocessor, model)
-                    
-                    result = scores(pipeline,
-                                    X, y, 
-                                    model_name, 
-                                    model_params, 
-                                    test = test, 
-                                    imputation = imputer_name)
-    
-                    results.append(result)
+                        results.append(result)
+
+                except:
+                    pass
     
             if test == "cat_encoding":
-                for preprocessor in preprocessors:
+                for encoder_name, preprocessor in preprocessors:
                     
                     preprocessor = make_column_transformer((SimpleImputer(strategy = "constant",
                                                                           fill_value = -1),
                                                             num_features),
                                                            (preprocessor, cat_features))
     
-                    encoder = preprocessor.transformers[1][1].__class__.__name__
                     pipeline = make_pipeline(preprocessor, model)
                     
                     result = scores(pipeline,
@@ -112,7 +99,7 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
                                     model_name, 
                                     model_params, 
                                     test = test, 
-                                    encoder = encoder)
+                                    encoder = encoder_name)
     
                     results.append(result)
     
@@ -138,17 +125,43 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
                                     threshold = threshold)
     
                     results.append(result)
-
-        return results
-
-    if test == "searching_params":
-
-        if preprocessors is None:
-            preprocessor = general_preprocessor
-        else:
-            preprocessor = preprocessors
+                    
+            if test == "randomized_search":
+            
+                pipeline = Pipeline([
+                    ("preprocessor", preprocessors[0]),
+                    ("remover", preprocessors[1]),
+                    ("model", model)
+                ])
+                
+                param_grid = param_grid
+            
+                optimizer = RandomizedSearchCV(pipeline, 
+                                               param_grid,
+                                               n_iter = 500,
+                                               cv = cv_scheme,
+                                               scoring = "roc_auc",
+                                               n_jobs = -1)
+                optimizer.fit(X, y)
+            
+                roc_auc = np.round(optimizer.best_score_, 4)
+                time = np.round(((optimizer.cv_results_["mean_fit_time"] + optimizer.cv_results_["mean_score_time"])).mean(), 2)
+            
+                result = {"Model": model_name,
+                          "ROC_AUC": roc_auc, 
+                          "Time[s]": time}
+                
+                joblib.dump(optimizer.best_estimator_, f"pickles/{model_name}.pkl")
+    
+                results.append(result)
         
-        model, param_grid = grid_search
+
+        return create_results_dataframe(results)
+
+    if test == "grid_search":
+
+        preprocessor = general_preprocessor
+        model, param_grid = search
 
         pipeline = Pipeline([
             ("preprocessor", preprocessor),
@@ -161,10 +174,8 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, grid_
                                  scoring = "roc_auc", 
                                  n_jobs = -1)
         optimizer.fit(X, y)
-        best_params = optimizer.best_params_
-        best_params["best_auc_score"] = np.round(optimizer.best_score_, 4)
         
-        return best_params, optimizer.best_estimator_
+        return np.round(optimizer.best_score_, 4), optimizer.best_estimator_
 
 
 def scores(pipeline, X, y, model_name, model_params, test, imputation = None, encoder = None, threshold = None):
