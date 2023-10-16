@@ -15,7 +15,7 @@ import joblib
 
 cv_scheme = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 42)
 
-def collect_tests_results(X, y, test, models = None, preprocessors = None, param_grid = None, feat_sel_estimator = None):
+def collect_tests_results(X, y, test, models = None, preprocessors = None, search = None, feat_sel_estimator = None):
     
     """
     Collects test results for different machine learning models.
@@ -24,7 +24,8 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, param
         models (list): List of models to evaluate.
         X (pd.DataFrame): Input data.
         y (pd.Series): Target labels.
-        test (str): Type of test to perform, either "imputation", "cat_encoding", "grid_search", "randomized_search",.
+        test (str): Type of test to perform, either "imputation", "cat_encoding", "feature_selection",
+        "grid_search", "randomized_search".
         preprocessors (list): List of preprocessors.
         search (tuple): (model, param_grid), only for "grid_search" and "randomized_search" test.
         feat_sel_estimator: estimator for feature selection test
@@ -125,38 +126,11 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, param
                                     threshold = threshold)
     
                     results.append(result)
-                    
-            if test == "randomized_search":
-            
-                pipeline = Pipeline([
-                    ("preprocessor", preprocessors[0]),
-                    ("remover", preprocessors[1]),
-                    ("model", model)
-                ])
-                
-                param_grid = param_grid
-            
-                optimizer = RandomizedSearchCV(pipeline, 
-                                               param_grid,
-                                               n_iter = 500,
-                                               cv = cv_scheme,
-                                               scoring = "roc_auc",
-                                               n_jobs = -1)
-                optimizer.fit(X, y)
-            
-                roc_auc = np.round(optimizer.best_score_, 4)
-                time = np.round(((optimizer.cv_results_["mean_fit_time"] + optimizer.cv_results_["mean_score_time"])).mean(), 2)
-            
-                result = {"Model": model_name,
-                          "ROC_AUC": roc_auc, 
-                          "Time[s]": time}
-                
-                joblib.dump(optimizer.best_estimator_, f"pickles/{model_name}.pkl")
-    
-                results.append(result)
-        
 
-        return create_results_dataframe(results)
+        results = create_results_dataframe(results)
+        results.to_csv(f"results_data/data_v1_results_{test}.csv", index = False)
+        
+        return results
 
     if test == "grid_search":
 
@@ -175,7 +149,52 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, param
                                  n_jobs = -1)
         optimizer.fit(X, y)
         
-        return np.round(optimizer.best_score_, 4), optimizer.best_estimator_
+        joblib.dump(optimizer.best_estimator_.steps[1][1], "results_data/pickles/fs_forest.pkl")
+        
+        return np.round(optimizer.best_score_, 4)
+
+    if test == "randomized_search":
+
+        models, grids = search
+
+        results = []
+        
+        for model, param_grid in zip(models, grids):
+        
+            pipeline = Pipeline([
+                ("preprocessor", preprocessors[0]),
+                ("remover", preprocessors[1]),
+                ("model", model)
+            ])
+            
+            param_grid = param_grid
+        
+            optimizer = RandomizedSearchCV(pipeline, 
+                                           param_grid,
+                                           n_iter = 500,
+                                           cv = cv_scheme,
+                                           scoring = "roc_auc",
+                                           n_jobs = -1)
+            optimizer.fit(X, y)
+
+            model_name = model.__class__.__name__
+            roc_auc = np.round(optimizer.best_score_, 4)
+  
+            idx_time = np.where(optimizer.cv_results_["rank_test_score"] == 1)
+            time = np.round((optimizer.cv_results_["mean_fit_time"] + optimizer.cv_results_["mean_score_time"])[idx_time][0], 2)
+        
+            result = {"Model": model_name,
+                      "ROC_AUC": roc_auc, 
+                      "Time[s]": time}
+
+            results.append(result)
+            
+            joblib.dump(optimizer.best_estimator_, f"pickles/{model_name}.pkl")
+        
+        results = create_results_dataframe(results)
+        results.to_csv("results_data/best_estimators.csv", index = False)
+        
+        return results
 
 
 def scores(pipeline, X, y, model_name, model_params, test, imputation = None, encoder = None, threshold = None):

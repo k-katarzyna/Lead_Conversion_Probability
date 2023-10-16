@@ -231,7 +231,7 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
     """
     A transformer for removing specified features based on the results of feature importance tests.
     The feature names to drop are specified as hard-coded strings based on the names used
-    in the transformation pipeline. For example, "featureunion__vars__Var2" is a valid feature name.
+    in the transformation pipeline. For example, "cat_union__vars__Var2" is a valid feature name.
 
     Parameters:
     -----------
