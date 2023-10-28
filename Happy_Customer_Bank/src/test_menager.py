@@ -1,24 +1,31 @@
-import pandas as pd
-import numpy as np
+import pandas as pd, numpy as np
+
 from sklearn.compose import make_column_transformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, precision_score, recall_score, confusion_matrix, f1_score
 from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from sklearn.feature_selection import SelectFromModel
+from sklearn import set_config
+
+from joblib import Parallel, delayed, dump
+
 from warnings import filterwarnings
 filterwarnings("ignore")
-import joblib
+
+from src.utils import to_labels
+from src.visuals import thresholds_results_plot
 
 
 cv_scheme = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 42)
 
-def collect_tests_results(X, y, test, models = None, preprocessors = None, search = None, feat_sel_estimator = None):
+
+def run_test(X, y, test, models = None, preprocessors = None, search = None, feat_sel_estimator = None):
     
     """
-    Collects test results for different machine learning models.
+    Runs tests and collects results for various experiments.
 
     Args:
         models (list): List of models to evaluate.
@@ -66,19 +73,19 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
             if test == "imputation":
 
                 try:         
-                    for imputer_name, preprocessor in preprocessors:
+                    for imputer, preprocessor in preprocessors:
     
                         preprocessor = make_column_transformer((preprocessor, num_features),
                                                                (OneHotEncoder(), cat_features))
         
                         pipeline = make_pipeline(preprocessor, model)
                         
-                        result = scores(pipeline,
-                                        X, y, 
-                                        model_name, 
-                                        model_params, 
-                                        test = test, 
-                                        imputation = imputer_name)
+                        result = cv_scores(pipeline,
+                                           X, y, 
+                                           model_name, 
+                                           model_params, 
+                                           test = test, 
+                                           imputation = imputer)
     
                         results.append(result)
 
@@ -86,7 +93,7 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
                     pass
     
             if test == "cat_encoding":
-                for encoder_name, preprocessor in preprocessors:
+                for encoder, preprocessor in preprocessors:
                     
                     preprocessor = make_column_transformer((SimpleImputer(strategy = "constant",
                                                                           fill_value = -1),
@@ -95,12 +102,12 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
     
                     pipeline = make_pipeline(preprocessor, model)
                     
-                    result = scores(pipeline,
-                                    X, y, 
-                                    model_name, 
-                                    model_params, 
-                                    test = test, 
-                                    encoder = encoder_name)
+                    result = cv_scores(pipeline,
+                                       X, y, 
+                                       model_name, 
+                                       model_params, 
+                                       test = test, 
+                                       encoder = encoder)
     
                     results.append(result)
     
@@ -118,12 +125,12 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
                                         threshold = threshold),
                         model)
     
-                    result = scores(pipeline,
-                                    X, y,
-                                    model_name,
-                                    model_params,
-                                    test = test,
-                                    threshold = threshold)
+                    result = cv_scores(pipeline,
+                                       X, y,
+                                       model_name,
+                                       model_params,
+                                       test = test,
+                                       threshold = threshold)
     
                     results.append(result)
 
@@ -149,7 +156,7 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
                                  n_jobs = -1)
         optimizer.fit(X, y)
         
-        joblib.dump(optimizer.best_estimator_.steps[1][1], "results_data/pickles/fs_forest.pkl")
+        dump(optimizer.best_estimator_.steps[1][1], "results_data/pickles/fs_forest.pkl")
         
         return np.round(optimizer.best_score_, 4)
 
@@ -180,16 +187,16 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
             model_name = model.__class__.__name__
             roc_auc = np.round(optimizer.best_score_, 4)
   
-            idx_time = np.where(optimizer.cv_results_["rank_test_score"] == 1)
-            time = np.round((optimizer.cv_results_["mean_fit_time"] + optimizer.cv_results_["mean_score_time"])[idx_time][0], 2)
+            idx = np.where(optimizer.cv_results_["rank_test_score"] == 1)
+            time = np.round((optimizer.cv_results_["mean_fit_time"] + optimizer.cv_results_["mean_score_time"])[idx][0], 2)
         
             result = {"Model": model_name,
-                      "ROC_AUC": roc_auc, 
+                      "ROC_AUC": roc_auc,
                       "Time[s]": time}
 
             results.append(result)
             
-            joblib.dump(optimizer.best_estimator_, f"pickles/{model_name}.pkl")
+            dump(optimizer.best_estimator_, f"results_data/pickles/{model_name}.pkl")
         
         results = create_results_dataframe(results)
         results.to_csv("results_data/best_estimators.csv", index = False)
@@ -197,7 +204,7 @@ def collect_tests_results(X, y, test, models = None, preprocessors = None, searc
         return results
 
 
-def scores(pipeline, X, y, model_name, model_params, test, imputation = None, encoder = None, threshold = None):
+def cv_scores(pipeline, X, y, model_name, model_params, test, imputation = None, encoder = None, threshold = None):
     
     """
     Calculates cross validation scores and prepares a dictionary with the results.
@@ -206,7 +213,7 @@ def scores(pipeline, X, y, model_name, model_params, test, imputation = None, en
         preprocessor: Data preprocessor.
         model: Machine learning model to evaluate.
         X (pd.DataFrame): Input data.
-        y (pd.Series): Target labels.
+        y (np.array): Target labels.
         model_name (str): Name of the machine learning model.
         model_params (str): Model parameters as a formatted string.
         test (str): Type of test, either "imputation", "cat_encoding", "feature_selection".
@@ -260,13 +267,12 @@ def scores(pipeline, X, y, model_name, model_params, test, imputation = None, en
 def create_results_dataframe(*args):
     
     """
-    Create a results DataFrame from a list or lists of dictionaries.
-
+    Create a results DataFrame from any number of dictionaries or dataframes.
+    
     Args:
         *args: Variable number of dictionaries containing results data.
-
     Returns:
-        pd.DataFrame: A DataFrame containing the results with the model names as the index.
+        pd.DataFrame: A DataFrame containing the results.
     """
     
     if len(args) == 1:
@@ -285,7 +291,7 @@ def summarize_results(dataframe, column_to_group_by):
     the DataFrame by the specified column. Returns a styled DataFrame with 
     background gradient applied to the "mean_roc_auc," "max_roc_auc," "mean_time[s]," and "max_time[s]" columns.
 
-    Parameters:
+    Args:
     -----------
     dataframe : pandas.DataFrame
         The input DataFrame containing the data to be summarized.
@@ -308,7 +314,116 @@ def summarize_results(dataframe, column_to_group_by):
                          axis = 1)
                .round(4))
 
-    results[["mean_time[s]"]] = results[["mean_time[s]"]].round(2)
+    results["mean_time[s]"] = results["mean_time[s]"].round(2)
     results = results.sort_values(by = ["max_roc_auc", "mean_roc_auc"], ascending = False)
 
     return results.style.background_gradient(subset = ["mean_roc_auc", "max_roc_auc", "mean_time[s]", "max_time[s]"])
+
+
+def process_fold(train_idx, test_idx, X, y, estimator, t):
+    
+    """
+    Processes a single fold of cross-validation. It calculates various classification metrics
+    for the provided estimator using the specified threshold and returns F1 Score, precision,
+    recall, and the geometric mean of TPF and FPR.
+    
+    Args:
+    train_idx (array-like): The indices of the training data.
+    test_idx (array-like): The indices of the testing data.
+    X (pd.DataFrame): The input features.
+    y (np.array): The target labels.
+    estimator: A scikit-learn classifier.
+    t (float): The threshold for class labels.
+
+    Returns:
+        f1 (float): F1 score.
+        precision (float): Precision.
+        recall (float): Recall.
+        g_mean (float): Geometric mean.
+    """
+    
+    X_train, X_test, y_train, y_test = (X.iloc[train_idx],
+                                        X.iloc[test_idx],
+                                        y[train_idx],
+                                        y[test_idx])
+    
+    set_config(transform_output="pandas")
+
+    estimator_clone = estimator
+    estimator_clone.fit(X_train, y_train)
+    y_proba = estimator_clone.predict_proba(X_test)[:, 1]
+    y_pred = to_labels(y_proba, t)
+
+    f1 = f1_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+
+    tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+    tpr = tp/(tp+fn)
+    fpr = fp/(fp+tn)
+    g_mean = np.sqrt(tpr * (1-fpr))
+
+    return f1, precision, recall, g_mean
+
+
+def cv_scores_for_thresholds(estimators, X, y, thresholds):
+    
+    """
+    Perform cross-validation for multiple estimators and different thresholds.
+
+    Parameters:
+        estimators (list of tuples): List of (estimator_name, estimator) pairs.
+        X (pd.DataFrame): The input features.
+        y (pd.Series): The target labels.
+        thresholds (np.array): List of threshold values to evaluate.
+
+    Returns:
+        results (dict): A dictionary of results for each estimator.
+        optimal_thresholds (list): List of optimal threshold values.
+    """
+    
+    results = {}
+    optimal_thresholds = []
+
+    X, y = X.copy(), y.copy()
+
+    X.reset_index(drop=True, inplace=True)
+    y.reset_index(drop=True, inplace=True)
+
+    for estimator_name, estimator in estimators:
+
+        f1_scores = []
+        precision_scores = []
+        recall_scores = []
+        g_mean_scores = []
+
+        for t in thresholds:
+            f1_cv = []
+            precision_cv = []
+            recall_cv = []
+            g_mean_cv = []
+
+            results_per_fold = Parallel(n_jobs=-1)(
+                delayed(process_fold)(train_idx, test_idx, X, y, estimator, t)
+                for train_idx, test_idx in cv_scheme.split(X, y)
+            )
+
+            for f1, precision, recall, g_mean in results_per_fold:
+                f1_cv.append(f1)
+                precision_cv.append(precision)
+                recall_cv.append(recall)
+                g_mean_cv.append(g_mean)
+
+            f1_scores.append(np.mean(f1_cv))
+            precision_scores.append(np.mean(precision_cv))
+            recall_scores.append(np.mean(recall_cv))
+            g_mean_scores.append(np.mean(g_mean_cv))
+
+        optimal_threshold = thresholds[np.argmax(g_mean_scores)]
+        optimal_thresholds.append(optimal_threshold)
+
+        results[estimator_name] = (f1_scores, precision_scores, recall_scores)
+
+    thresholds_results_plot(results, thresholds, optimal_thresholds)
+
+    return results, optimal_thresholds

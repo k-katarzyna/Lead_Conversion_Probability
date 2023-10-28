@@ -47,7 +47,11 @@ def data_preparing_v1(data):
 
 def data_preparing_v2(data):
     
-    X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account", "Device_Type","LoggedIn", "Disbursed"], axis = 1)
+    """
+    Returns raw data without unnecessary columns as X, y.
+    """
+    
+    X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account", "Device_Type", "LoggedIn", "Disbursed"], axis = 1)
     y = data.Disbursed
 
     return X, y
@@ -171,9 +175,9 @@ class DateEncoder(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, 
-				 extract_from_date = "age", 
-				 date_for_calc = "04-08-2015"):
-		
+                 extract_from_date = "age", 
+                 date_for_calc = "04-08-2015"):
+
         self.extract_from_date = extract_from_date
         self.date_for_calc = date_for_calc
         
@@ -186,8 +190,8 @@ class DateEncoder(BaseEstimator, TransformerMixin):
         
         if self.extract_from_date == "age":
             transformed = transformed.apply(
-				lambda x: x - pd.DateOffset(years=100) if x.year > 2014 else x
-			)
+                lambda x: x - pd.DateOffset(years=100) if x.year > 2014 else x
+            )
             reference_date = pd.to_datetime(self.date_for_calc)
             return pd.DataFrame((reference_date - transformed).dt.days // 365)
 

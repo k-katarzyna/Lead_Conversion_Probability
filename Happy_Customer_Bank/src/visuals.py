@@ -5,8 +5,12 @@ import seaborn as sns
 
 plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
+plt.rcParams.update({"axes.grid": True})
+plt.rcParams["grid.linewidth"] = 0.2
+plt.rcParams["grid.alpha"] = 0.5
 
-def missings_plot(data, return_features = False):
+
+def missings_plot(data):
     
     """
     Creates horizontal bar plots showing the number of missing values and zero values for selected features.
@@ -53,9 +57,6 @@ def missings_plot(data, return_features = False):
 
     plt.tight_layout()
     plt.show()
-
-    if return_features:
-        return features_with_nan
 
 
 def histplots_grid(n_rows, n_cols, data, features = None):	
@@ -105,7 +106,7 @@ def countplots(*args, data):
         *args (str): One or more feature names to create countplots for.
         data (pd.DataFrame): The dataframe containing the data to visualize.
     """
-	
+
     for feature in args:
         plt.figure(figsize=(15, 3))
         order = data[feature].value_counts().index
@@ -152,5 +153,45 @@ def feature_importance_plot(importances, feature_names, title="Feature Importanc
     plt.xlabel("Feature Importance")
     plt.ylabel("Feature Name")
     plt.title(title)
+    plt.tight_layout()
+    plt.show()
+
+
+def thresholds_results_plot(results, thresholds, optimal_thresholds):
+    
+    """
+    Plots precision, recall, and F1 Score for different discrimination thresholds.
+
+    Args:
+    results (dict): A dictionary containing results for different estimators.
+        Each key-value pair represents the name of an estimator and its corresponding scores.
+        The scores includes precision, recall, and F1 Score.
+    thresholds (np.array): An array of threshold values.
+    optimal_thresholds (list): An array of optimal threshold values corresponding to each estimator.
+    """
+    
+    fig, ax = plt.subplots(2, 2, figsize=(12, 8))
+    ax = ax.flatten()
+
+    for i, (estimator_name, scores) in enumerate(results.items()): 
+
+        f1_scores, precision_scores, recall_scores = scores
+        max_f1_idx = np.argmax(f1_scores)
+        max_f1 = f1_scores[max_f1_idx]
+
+        ax[i].plot(thresholds, precision_scores, color="orange", label="Precision")
+        ax[i].plot(thresholds, recall_scores, color="blue", label="Recall")
+        ax[i].plot(thresholds, f1_scores, color="green", label="F1 Score")
+        ax[i].scatter(thresholds[max_f1_idx], max_f1, c = "darkgreen", label = f"Max F1 = {max_f1:.2f}")
+
+        ax[i].axvline(x=optimal_thresholds[i], color="black", linestyle="--", linewidth=0.8, label=f"Optimal threshold = {optimal_thresholds[i]}")
+
+        ax[i].set_title(estimator_name)
+        ax[i].set_xlabel("Threshold")
+        ax[i].set_ylabel("Score")
+        ax[i].set_xticks(np.arange(0, 1.1, 0.1))
+        ax[i].set_yticks(np.arange(0, 1.1, 0.1))
+        ax[i].legend()
+
     plt.tight_layout()
     plt.show()
