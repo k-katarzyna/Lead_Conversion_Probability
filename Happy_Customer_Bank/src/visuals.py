@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
+from sklearn import set_config
+set_config(transform_output="pandas")
+from src.utils import to_labels
 
 plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
@@ -53,7 +57,8 @@ def missings_plot(data):
                      va = "center",
                      ha = "center",
                      bbox = dict(boxstyle = "round",
-                                 fc = "azure"))
+                                 fc = "azure", 
+                                 alpha = 0.5))
 
     plt.tight_layout()
     plt.show()
@@ -192,6 +197,89 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
         ax[i].set_xticks(np.arange(0, 1.1, 0.1))
         ax[i].set_yticks(np.arange(0, 1.1, 0.1))
         ax[i].legend()
+
+    plt.tight_layout()
+    plt.show()
+    
+    
+def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
+
+
+    fig, ax = plt.subplots(1, 2, figsize = (12,5))
+
+    for (name, estimator), opt_threshold in zip(estimators, optimal_thresholds):
+
+        estimator.fit(X_train, y_train)
+        y_proba = estimator.predict_proba(X_test)[:, 1]
+
+        fpr, tpr, thresholds = roc_curve(y_test, y_proba)
+
+        idx = np.argmin(np.abs(thresholds - opt_threshold))
+        fpr_value, tpr_value, threshold_value = fpr[idx], tpr[idx], thresholds[idx]
+
+        ax[0].plot(fpr, tpr, label = f"{name} (AUC = {np.round(roc_auc_score(y_test, y_proba), 3)})")
+        ax[1].plot(fpr, tpr)
+        ax[1].scatter(fpr_value, tpr_value, s=150, label = f"{name} threshold = {np.round(threshold_value, 2)}")
+
+    ax[0].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
+    ax[0].set_title("ROC curves")
+    ax[1].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6)
+    ax[1].set_xlim(0.0, 0.6)
+    ax[1].set_ylim(0.4, 1.0)
+    ax[1].set_title("ROC curves zoomed in at top left, optimal classification thresholds")
+
+    for ax in [ax[0], ax[1]]:
+        ax.legend()
+        ax.set_xlabel("False positive rate")
+        ax.set_ylabel("True positive rate")
+
+    plt.tight_layout()
+    plt.show()
+    
+
+def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
+
+    metrics = ["Precision", "Recall", "F1 Score", "Balanced Accuracy", "% of positive class predictions"]
+
+    results = []
+
+    for (_, estimator), opt_threshold in zip(estimators, optimal_thresholds):
+        estimator.fit(X_train, y_train)
+        y_proba = estimator.predict_proba(X_test)[:, 1]
+        y_pred = to_labels(y_proba, opt_threshold)
+
+        scores = np.round([precision_score(y_test, y_pred),
+                           recall_score(y_test, y_pred),
+                           f1_score(y_test, y_pred),
+                           balanced_accuracy_score(y_test, y_pred),
+                           np.mean(y_pred)], 
+                          2)
+
+        results.append(scores)
+
+    bar_width = 0.2
+
+    fig, ax = plt.subplots(figsize=(12, 4))
+
+    for i, (name, _) in enumerate(estimators):
+        x = np.arange(len(metrics)) + i * bar_width
+        bars = ax.bar(x, results[i], bar_width, label=name)
+
+        for bar, value in zip(bars, results[i]):
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), 
+                    f"{value:.2f}", 
+                    ha='center', va='bottom', 
+                    bbox=dict(boxstyle = "round",
+                              facecolor='white',
+                              alpha=0.5))
+
+    ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
+    ax.set_xticklabels(metrics)
+
+    ax.legend()
+
+    ax.set_ylabel("Score")
+    ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")
 
     plt.tight_layout()
     plt.show()
