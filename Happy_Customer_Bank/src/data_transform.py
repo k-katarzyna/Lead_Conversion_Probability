@@ -9,15 +9,20 @@ biggest_cities = ["Bangalore", "Delhi", "Chennai", "Hyderabad", "Mumbai", "Pune"
 
 
 def data_preparing_v1(data):
+    
     """
     Preprocess and transform the input DataFrame.
 
     Args:
+    -------------
         data (pd.DataFrame): The input DataFrame containing raw data.
 
     Returns:
-        pd.DataFrame: A preprocessed DataFrame with modified and transformed columns.
+    -------------
+        X (pd.DataFrame): A preprocessed DataFrame with modified and transformed columns.
+        y (pd.Series): Target variable
     """
+    
     data = data.copy()
 
     data.drop(["ID", "Lead_Creation_Date", "Device_Type", "Salary_Account", "LoggedIn"], axis = 1, inplace = True)
@@ -324,4 +329,3 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
                                  axis = 1, inplace = True)
 
         return transformed
-            

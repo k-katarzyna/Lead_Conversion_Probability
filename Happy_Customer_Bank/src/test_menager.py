@@ -25,20 +25,18 @@ cv_scheme = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 42)
 def run_test(X, y, test, models = None, preprocessors = None, search = None, feat_sel_estimator = None):
     
     """
-    Runs tests and collects results for various experiments.
+    Runs tests, collects and save results for various experiments.
 
     Args:
+    -----------
         models (list): List of models to evaluate.
         X (pd.DataFrame): Input data.
         y (pd.Series): Target labels.
         test (str): Type of test to perform, either "imputation", "cat_encoding", "feature_selection",
-        "grid_search", "randomized_search".
+                    "grid_search", "randomized_search".
         preprocessors (list): List of preprocessors.
         search (tuple): (model, param_grid), only for "grid_search" and "randomized_search" test.
-        feat_sel_estimator: estimator for feature selection test
-
-    Returns:
-        list: List of dictionaries containing test results.
+        feat_sel_estimator: estimator for feature selection test.
     """
 
     num_features = X.select_dtypes("number").columns
@@ -210,6 +208,7 @@ def cv_scores(pipeline, X, y, model_name, model_params, test, imputation = None,
     Calculates cross validation scores and prepares a dictionary with the results.
 
     Args:
+    ----------
         preprocessor: Data preprocessor.
         model: Machine learning model to evaluate.
         X (pd.DataFrame): Input data.
@@ -222,6 +221,7 @@ def cv_scores(pipeline, X, y, model_name, model_params, test, imputation = None,
         threshold (float): Feature selection threshold (only for "feature_selection" test).
 
     Returns:
+    ----------
         dict: Dictionary containing test results.
     """
     
@@ -270,8 +270,10 @@ def create_results_dataframe(*args):
     Create a results DataFrame from any number of dictionaries or dataframes.
     
     Args:
+    ----------
         *args: Variable number of dictionaries containing results data.
     Returns:
+    -----------
         pd.DataFrame: A DataFrame containing the results.
     """
     
@@ -293,8 +295,9 @@ def summarize_results(dataframe, column_to_group_by):
 
     Args:
     -----------
-    dataframe : pandas.DataFrame
-        The input DataFrame containing the data to be summarized.
+    dataframe : pd.DataFrame or str
+        The input DataFrame containing the data to be summarized. If a string "all_results" is provided, 
+        the function will read data from CSV files and create a summary DataFrame.
     column : str
         The name of the column by which the DataFrame should be grouped.
 
@@ -303,6 +306,16 @@ def summarize_results(dataframe, column_to_group_by):
     pandas.io.formats.style.Styler
         A styled DataFrame with summary statistics and background gradient for specific columns.
     """
+    
+    if isinstance(dataframe, str) and dataframe == "all_results":
+        
+        results_imp = pd.read_csv("results_data/data_v1_results_imputation.csv")
+        results_enc = pd.read_csv("results_data/data_v1_results_cat_encoding.csv")
+        results_sel = pd.read_csv("results_data/data_v1_results_feature_selection.csv")
+        
+        dataframe = create_results_dataframe(results_imp[["Model", "ROC_AUC", "Time[s]"]],
+                                              results_enc[["Model", "ROC_AUC", "Time[s]"]],
+                                              results_sel[["Model", "ROC_AUC", "Time[s]"]])
    
     results = (dataframe
                .groupby(column_to_group_by)
@@ -323,19 +336,21 @@ def summarize_results(dataframe, column_to_group_by):
 def process_fold(train_idx, test_idx, X, y, estimator, t):
     
     """
-    Processes a single fold of cross-validation. It calculates various classification metrics
-    for the provided estimator using the specified threshold and returns F1 Score, precision,
-    recall, and the geometric mean of TPF and FPR.
+    Processes a single fold of cross-validation performed by cv_scores_for_thresholds function.
+    It calculates various classification metrics for the provided estimator using the specified
+    threshold and returns F1 Score, precision, recall, and the geometric mean of TPF and FPR.
     
     Args:
-    train_idx (array-like): The indices of the training data.
-    test_idx (array-like): The indices of the testing data.
-    X (pd.DataFrame): The input features.
-    y (np.array): The target labels.
-    estimator: A scikit-learn classifier.
-    t (float): The threshold for class labels.
+    -----------
+        train_idx (array-like): The indices of the training data.
+        test_idx (array-like): The indices of the testing data.
+        X (pd.DataFrame): The input features.
+        y (pd.Series): The target labels.
+        estimator: A scikit-learn classifier.
+        t (float): The threshold for class labels.
 
     Returns:
+    -----------
         f1 (float): F1 score.
         precision (float): Precision.
         recall (float): Recall.
@@ -371,13 +386,15 @@ def cv_scores_for_thresholds(estimators, X, y, thresholds):
     """
     Perform cross-validation for multiple estimators and different thresholds.
 
-    Parameters:
+    Args:
+    -----------
         estimators (list of tuples): List of (estimator_name, estimator) pairs.
         X (pd.DataFrame): The input features.
         y (pd.Series): The target labels.
         thresholds (np.array): List of threshold values to evaluate.
 
     Returns:
+    -----------
         results (dict): A dictionary of results for each estimator.
         optimal_thresholds (list): List of optimal threshold values.
     """

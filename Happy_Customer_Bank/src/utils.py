@@ -2,6 +2,10 @@ from joblib import load
 
 def load_estimators():
     
+    """
+    Loads previously optimized classifier estimators from saved pickle files.
+    """
+    
     HGBclf = load("results_data/pickles/HistGradientBoostingClassifier.pkl")
     BRFclf = load("results_data/pickles/BalancedRandomForestClassifier.pkl")
     BBclf = load("results_data/pickles/BalancedBaggingClassifier.pkl")
@@ -11,6 +15,10 @@ def load_estimators():
 
 
 def to_labels(y_proba, threshold):
+    
+    """
+    Converts predicted probabilities to binary labels based on the given threshold.
+    """
     
     return (y_proba >= threshold).astype("int")
 

@@ -5,6 +5,7 @@ import seaborn as sns
 from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
 from sklearn import set_config
 set_config(transform_output="pandas")
+
 from src.utils import to_labels
 
 plt.rcParams["axes.spines.top"] = False
@@ -23,8 +24,6 @@ def missings_plot(data):
     -----------
     data : pandas DataFrame
         The input DataFrame containing the data.
-    return_features : bool, optional (default=False)
-        If True, returns a list of features with missing values.
     """
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 4))
@@ -64,7 +63,7 @@ def missings_plot(data):
     plt.show()
 
 
-def histplots_grid(n_rows, n_cols, data, features = None):	
+def histplots_grid(n_rows, n_cols, data, features = None):
     
     """
     Creates a grid of histograms.
@@ -203,7 +202,21 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
     
     
 def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
+    
+    """
+    Plots ROC curves for each estimator, including the AUC (Area Under the Curve) score in the legend,
+    and marks the optimal classification threshold for each estimator on the zoomed-in plot.
 
+    The zoomed-in plot focuses on the top-left area of the ROC curves where the thresholds are marked.
+
+    Args:
+    estimators (list of tuples): List of tuples where each tuple contains: (estimator_name, estimator object).
+    optimal_thresholds (list): List of optimal classification thresholds for each estimator.
+    X_train (pd.DataFrame): Training data.
+    X_test (pd.DataFrame): Testing data.
+    y_train (pd.Series): Target values for training data.
+    y_test (pd.Series): Target values for testing data.
+    """
 
     fig, ax = plt.subplots(1, 2, figsize = (12,5))
 
@@ -238,7 +251,20 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
     
 
 def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
+    
+    """
+    Calculates and compares several classification metrics, including Precision, Recall, F1 Score, Balanced Accuracy,
+    and the percentage of positive class predictions for each estimator using their optimal discrimination thresholds.
 
+    Args:
+    estimators (list of tuples): List of tuples where each tuple contains: (estimator_name, estimator object).
+    optimal_thresholds (list): List of optimal classification thresholds for each estimator.
+    X_train (pd.DataFrame): Training data.
+    X_test (pd.DataFrame): Testing data.
+    y_train (pd.Series): Target values for training data.
+    y_test (pd.Series): Target values for testing data.
+    """
+    
     metrics = ["Precision", "Recall", "F1 Score", "Balanced Accuracy", "% of positive class predictions"]
 
     results = []
@@ -248,12 +274,11 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
         y_proba = estimator.predict_proba(X_test)[:, 1]
         y_pred = to_labels(y_proba, opt_threshold)
 
-        scores = np.round([precision_score(y_test, y_pred),
-                           recall_score(y_test, y_pred),
-                           f1_score(y_test, y_pred),
-                           balanced_accuracy_score(y_test, y_pred),
-                           np.mean(y_pred)], 
-                          2)
+        scores = [precision_score(y_test, y_pred),
+                  recall_score(y_test, y_pred),
+                  f1_score(y_test, y_pred),
+                  balanced_accuracy_score(y_test, y_pred),
+                  np.mean(y_pred)]
 
         results.append(scores)
 
@@ -275,9 +300,7 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
 
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
     ax.set_xticklabels(metrics)
-
     ax.legend()
-
     ax.set_ylabel("Score")
     ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")
 
