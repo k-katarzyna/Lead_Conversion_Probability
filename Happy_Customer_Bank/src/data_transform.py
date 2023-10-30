@@ -11,16 +11,16 @@ biggest_cities = ["Bangalore", "Delhi", "Chennai", "Hyderabad", "Mumbai", "Pune"
 def data_preparing_v1(data):
     
     """
-    Preprocess and transform the input DataFrame.
+    Preprocesses and transforms the input DataFrame.
 
     Args:
     -------------
-        data (pd.DataFrame): The input DataFrame containing raw data.
+    data (pd.DataFrame): The input DataFrame containing raw data.
 
     Returns:
     -------------
-        X (pd.DataFrame): A preprocessed DataFrame with modified and transformed columns.
-        y (pd.Series): Target variable
+    X (pd.DataFrame): A preprocessed DataFrame with modified and transformed columns.
+    y (pd.Series): Target variable
     """
     
     data = data.copy()
@@ -65,8 +65,6 @@ def data_preparing_v2(data):
 class RareAggregator(BaseEstimator, TransformerMixin):
     
     """
-    Transformer for encoding categorical features and with rare categories grouping.
-
     This transformer groups rare categories within categorical features. Categories with a frequency
     less than the specified threshold will be grouped into a single "Others" category.
 
@@ -119,18 +117,18 @@ class RareAggregator(BaseEstimator, TransformerMixin):
 class MixedImputer(BaseEstimator, TransformerMixin):
     
     """
-    Transformer for imputing missing values. It can handle both simple imputation, where missing values are filled
-    with specified values, and imputation based on a compression of applied and submitted loan features.
+    Transformer for imputing missing values.
 
     Parameters:
     -----------
     how : str, default="simple"
-        The imputation strategy to be used. Supported values are "simple" and "applied_submitted_compression".
+        The imputation strategy to be used. Supported values are "simple", "applied_submitted_compression" and None.
         - "simple": Fills missing values with 0 for 'Loan_Amount_Applied', 'Loan_Tenure_Applied', and 'Existing_EMI',
           and fills other missing values with -1.
         - "applied_submitted_compression": Fills missing values in 'Loan_Amount_Submitted' and 'Loan_Tenure_Submitted' 
           with corresponding values from 'Loan_Amount_Applied' and 'Loan_Tenure_Applied'. Removes 'Loan_Amount_Applied' 
           and 'Loan_Tenure_Applied' from the dataset. Fills missing 'Existing_EMI' with 0 and other missing values with -1.
+        - None: imputation can be skipped.
     """
     
     def __init__(self, how = "simple"):
@@ -205,12 +203,8 @@ class ZeroOneEncoder(BaseEstimator, TransformerMixin):
 
     """
     Transformer for categorical features with missing values, where only whether the value is defined or
-    not may be relevant. It automatically detects columns with NaN values.
-    It replaces NaN with 0 and non-NaN values with 1.
-
-    Parameters:
-    -----------
-    None
+    not may be relevant. It automatically detects columns with NaN values. It replaces NaN with 0
+    and non-NaN values with 1.
 
     Attributes:
     -----------

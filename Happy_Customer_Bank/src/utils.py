@@ -3,7 +3,7 @@ from joblib import load
 def load_estimators():
     
     """
-    Loads previously optimized classifier estimators from saved pickle files.
+    Loads previously optimized estimators from saved pickle files.
     """
     
     HGBclf = load("results_data/pickles/HistGradientBoostingClassifier.pkl")

@@ -25,18 +25,18 @@ cv_scheme = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 42)
 def run_test(X, y, test, models = None, preprocessors = None, search = None, feat_sel_estimator = None):
     
     """
-    Runs tests, collects and save results for various experiments.
+    Runs tests, collects and saves results for various experiments.
 
     Args:
     -----------
-        models (list): List of models to evaluate.
-        X (pd.DataFrame): Input data.
-        y (pd.Series): Target labels.
-        test (str): Type of test to perform, either "imputation", "cat_encoding", "feature_selection",
-                    "grid_search", "randomized_search".
-        preprocessors (list): List of preprocessors.
-        search (tuple): (model, param_grid), only for "grid_search" and "randomized_search" test.
-        feat_sel_estimator: estimator for feature selection test.
+    models (list): List of models to evaluate.
+    X (pd.DataFrame): Input data.
+    y (pd.Series): Target labels.
+    test (str): Type of test to perform, either "imputation", "cat_encoding", "feature_selection",
+                "grid_search", "randomized_search".
+    preprocessors (list): List of preprocessors.
+    search (tuple): (model, param_grid), only for "grid_search" and "randomized_search" test.
+    feat_sel_estimator: estimator for feature selection test.
     """
 
     num_features = X.select_dtypes("number").columns
@@ -209,16 +209,16 @@ def cv_scores(pipeline, X, y, model_name, model_params, test, imputation = None,
 
     Args:
     ----------
-        preprocessor: Data preprocessor.
-        model: Machine learning model to evaluate.
-        X (pd.DataFrame): Input data.
-        y (np.array): Target labels.
-        model_name (str): Name of the machine learning model.
-        model_params (str): Model parameters as a formatted string.
-        test (str): Type of test, either "imputation", "cat_encoding", "feature_selection".
-        imputation (str): Imputation method (only for "imputation" test).
-        encoder (str): Encoder used (only for "cat_encoding" test).
-        threshold (float): Feature selection threshold (only for "feature_selection" test).
+    preprocessor: Data preprocessor.
+    model: Machine learning model to evaluate.
+    X (pd.DataFrame): Input data.
+    y (np.array): Target labels.
+    model_name (str): Name of the model.
+    model_params (str): Model parameters.
+    test (str): Type of test, either "imputation", "cat_encoding", "feature_selection".
+    imputation (str): Imputation method (only for "imputation" test).
+    encoder (str): Encoder used (only for "cat_encoding" test).
+    threshold (float): Feature selection threshold (only for "feature_selection" test).
 
     Returns:
     ----------
@@ -267,18 +267,20 @@ def cv_scores(pipeline, X, y, model_name, model_params, test, imputation = None,
 def create_results_dataframe(*args):
     
     """
-    Create a results DataFrame from any number of dictionaries or dataframes.
+    Creates a results DataFrame from any number of dictionaries or dataframes.
     
     Args:
     ----------
-        *args: Variable number of dictionaries containing results data.
+    *args: Variable number of dictionaries containing results data.
+    
     Returns:
     -----------
-        pd.DataFrame: A DataFrame containing the results.
+    pd.DataFrame: A DataFrame containing the results.
     """
     
     if len(args) == 1:
         return pd.DataFrame(args[0])
+    
     elif len(args) > 1:
         return pd.concat([pd.DataFrame(arg) for arg in args])
 
@@ -286,20 +288,19 @@ def create_results_dataframe(*args):
 def summarize_results(dataframe, column_to_group_by):
     
     """
-    Display summary statistics for a DataFrame grouped by a specified column.
+    Displays summary statistics for a DataFrame grouped by a specified column.
 
-    This function takes a DataFrame and a column name as input and computes summary statistics
+    The function takes a DataFrame and a column name as input and computes summary statistics
     (count, mean, min, max) for two specified columns ("ROC_AUC" and "Time[s]") after grouping
-    the DataFrame by the specified column. Returns a styled DataFrame with 
-    background gradient applied to the "mean_roc_auc," "max_roc_auc," "mean_time[s]," and "max_time[s]" columns.
+    the DataFrame by the specified column. Returns a styled DataFrame with background gradient
+    applied to the "mean_roc_auc," "max_roc_auc," "mean_time[s]," and "max_time[s]" columns.
 
     Args:
     -----------
-    dataframe : pd.DataFrame or str
-        The input DataFrame containing the data to be summarized. If a string "all_results" is provided, 
-        the function will read data from CSV files and create a summary DataFrame.
-    column : str
-        The name of the column by which the DataFrame should be grouped.
+    dataframe (pd.DataFrame or str): The input DataFrame containing the data to be summarized.
+        If a string "all_results" is provided, the function reads data from CSV files and creates
+        a summary DataFrame.
+    column_to_group_by(str): The name of the column by which the DataFrame should be grouped.
 
     Returns:
     --------
@@ -342,19 +343,19 @@ def process_fold(train_idx, test_idx, X, y, estimator, t):
     
     Args:
     -----------
-        train_idx (array-like): The indices of the training data.
-        test_idx (array-like): The indices of the testing data.
-        X (pd.DataFrame): The input features.
-        y (pd.Series): The target labels.
-        estimator: A scikit-learn classifier.
-        t (float): The threshold for class labels.
+    train_idx (np.array): The indices of the training data.
+    test_idx (np.array): The indices of the testing data.
+    X (pd.DataFrame): The input features.
+    y (pd.Series): The target labels.
+    estimator: A scikit-learn classifier.
+    t (float): The threshold for class labels.
 
     Returns:
     -----------
-        f1 (float): F1 score.
-        precision (float): Precision.
-        recall (float): Recall.
-        g_mean (float): Geometric mean.
+    f1 (float): F1 score.
+    precision (float): Precision.
+    recall (float): Recall.
+    g_mean (float): Geometric mean.
     """
     
     X_train, X_test, y_train, y_test = (X.iloc[train_idx],
@@ -384,19 +385,19 @@ def process_fold(train_idx, test_idx, X, y, estimator, t):
 def cv_scores_for_thresholds(estimators, X, y, thresholds):
     
     """
-    Perform cross-validation for multiple estimators and different thresholds.
+    Performs cross-validation for multiple estimators and different thresholds.
 
     Args:
     -----------
-        estimators (list of tuples): List of (estimator_name, estimator) pairs.
-        X (pd.DataFrame): The input features.
-        y (pd.Series): The target labels.
-        thresholds (np.array): List of threshold values to evaluate.
+    estimators (list of tuples): List of (estimator_name, estimator) pairs.
+    X (pd.DataFrame): The input features.
+    y (pd.Series): The target labels.
+    thresholds (np.array): List of threshold values to evaluate.
 
     Returns:
     -----------
-        results (dict): A dictionary of results for each estimator.
-        optimal_thresholds (list): List of optimal threshold values.
+    results (dict): A dictionary of results for each estimator.
+    optimal_thresholds (list): List of optimal threshold values.
     """
     
     results = {}

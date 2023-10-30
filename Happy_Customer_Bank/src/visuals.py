@@ -20,10 +20,9 @@ def missings_plot(data):
     """
     Creates horizontal bar plots showing the number of missing values and zero values for selected features.
 
-    Parameters:
+    Args:
     -----------
-    data : pandas DataFrame
-        The input DataFrame containing the data.
+        data (pd.DataFrame): The input DataFrame containing the data.
     """
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 4))
@@ -69,11 +68,12 @@ def histplots_grid(n_rows, n_cols, data, features = None):
     Creates a grid of histograms.
 
     Args:
-        n_rows (int): Number of rows in the grid.
-        n_cols (int): Number of columns in the grid.
-        data (pd.DataFrame): The dataframe containing the data for plotting.
-        features (list, optional): List of feature names to plot. 
-            If not provided, it selects numeric features with more than 2 unique values.
+    -----------
+    n_rows (int): Number of rows in the grid.
+    n_cols (int): Number of columns in the grid.
+    data (pd.DataFrame): The dataframe containing the data for plotting.
+    features (list, optional): List of feature names to plot. If not provided,
+            it selects numeric features with more than 2 unique values.
 
     Number of rows and columns must correspond with the number of features.
     """
@@ -107,8 +107,8 @@ def countplots(*args, data):
     Creates countplots for one or more categorical features.
 
     Args:
-        *args (str): One or more feature names to create countplots for.
-        data (pd.DataFrame): The dataframe containing the data to visualize.
+    *args (str): One or more feature names to create countplots for.
+    data (pd.DataFrame): The dataframe containing the data to visualize.
     """
 
     for feature in args:
@@ -140,8 +140,9 @@ def feature_importance_plot(importances, feature_names, title="Feature Importanc
     Creates horizontal barplot for feature importances.
 
     Args:
-        importances (np.array): Feature importances values.
-        feature_names (list): Feature names for plotting.
+    ------------
+    importances (np.array): Feature importances values.
+    feature_names (list): Feature names for plotting.
     """
     
     sorted_indices = importances.argsort()
@@ -210,6 +211,7 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
     The zoomed-in plot focuses on the top-left area of the ROC curves where the thresholds are marked.
 
     Args:
+    ------------
     estimators (list of tuples): List of tuples where each tuple contains: (estimator_name, estimator object).
     optimal_thresholds (list): List of optimal classification thresholds for each estimator.
     X_train (pd.DataFrame): Training data.
@@ -257,6 +259,7 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
     and the percentage of positive class predictions for each estimator using their optimal discrimination thresholds.
 
     Args:
+    -----------
     estimators (list of tuples): List of tuples where each tuple contains: (estimator_name, estimator object).
     optimal_thresholds (list): List of optimal classification thresholds for each estimator.
     X_train (pd.DataFrame): Training data.
