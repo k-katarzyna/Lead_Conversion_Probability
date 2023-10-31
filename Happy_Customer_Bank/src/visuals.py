@@ -40,7 +40,8 @@ def missings_plot(data):
                      va = "center", 
                      ha = "center",
                      bbox = dict(boxstyle="round",
-                                 fc = "aliceblue"))
+                                 fc = "aliceblue",
+                                 alpha = 0.8))
 
     features_with_zeros = ["Monthly_Income", "Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI", "Employer_Name"]
     number_of_zero_values = ((data[features_with_zeros] == 0) | (data[features_with_zeros] == "0")).sum()
@@ -56,7 +57,7 @@ def missings_plot(data):
                      ha = "center",
                      bbox = dict(boxstyle = "round",
                                  fc = "azure", 
-                                 alpha = 0.5))
+                                 alpha = 0.8))
 
     plt.tight_layout()
     plt.show()

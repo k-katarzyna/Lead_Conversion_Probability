@@ -169,8 +169,7 @@ class DateEncoder(BaseEstimator, TransformerMixin):
 
     Parameters:
     -----------
-    extract_from_date : str, default=None
-        Specify the type of information to extract from the date. Options: "age".
+    extract_from_date : str, default="age"
     date_for_calc : str, default="04-08-2015"
         A reference date in the format "dd-mm-yyyy". By default, age is calculated relative to this date 
         (the date the Happy Customer Bank task appeared).
@@ -188,24 +187,25 @@ class DateEncoder(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        transformed = X.copy()
-        transformed = pd.to_datetime(transformed)
+        X_transformed = X.copy()
+        X_transformed = pd.to_datetime(X_transformed)
         
         if self.extract_from_date == "age":
-            transformed = transformed.apply(
+            X_transformed = X_transformed.apply(
                 lambda x: x - pd.DateOffset(years=100) if x.year > 2014 else x
             )
             reference_date = pd.to_datetime(self.date_for_calc)
-            return pd.DataFrame((reference_date - transformed).dt.days // 365)
+            
+            return pd.DataFrame((reference_date - X_transformed).dt.days // 365)
 
 
 class ZeroOneEncoder(BaseEstimator, TransformerMixin):
 
     """
-    Transformer for categorical features with missing values, where only whether the value is defined or
-    not may be relevant. It automatically detects columns with NaN values. It replaces NaN with 0
+    Transformer for categorical features with missing values, where only whether the value is defined
+    or not may be relevant. It automatically detects columns with NaN values. It replaces NaN with 0
     and non-NaN values with 1.
-
+    
     Attributes:
     -----------
     columns_with_nan_ : list
@@ -217,16 +217,16 @@ class ZeroOneEncoder(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        transformed = X.copy()
+        X_transformed = X.copy()
 
         for col in self.columns_with_nan_:
-            transformed[col] = transformed[col].apply(
+            X_transformed[col] = X_transformed[col].apply(
                 lambda x:
                 0 if pd.isna(x) or (str(x).isdigit()) # "0" and other uncorrect digital values in Employer_Name
                 else 1
             )
 
-        return transformed
+        return X_transformed
 
 
 class ColumnRemover(BaseEstimator, TransformerMixin):
@@ -234,7 +234,7 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
     """
     A transformer for removing specified features based on the results of feature importance tests.
     The feature names to drop are specified as hard-coded strings based on the names used
-    in the transformation pipeline. For example, "cat_union__vars__Var2" is a valid feature name.
+    in the transformation pipeline.
 
     Parameters:
     -----------
@@ -246,80 +246,31 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
     def __init__(self, to_drop = 0):
         self.to_drop = to_drop
 
-    def fit(self, X, y = None):   
+    def fit(self, X, y = None): 
         return self
+    
+    def drop_features(self, X_transformed, features):
+        
+        if ("num_pipe__Loan_Tenure_Applied" in features and 
+            "num_pipe__Loan_Tenure_Applied" not in X_transformed.columns): # can be already removed by MixedImputer
+            
+            features.remove("num_pipe__Loan_Tenure_Applied")
+        
+        return X_transformed.drop(features, axis=1, inplace=True)
 
     def transform(self, X):
+        
+        X_transformed = X.copy()
+        
+        features_to_drop = ["cat_union__vars__Var2",
+                            "cat_union__remainder__Mobile_Verified",
+                            "num_pipe__Loan_Tenure_Applied",
+                            "num_pipe__EMI_Loan_Submitted",
+                            "cat_union__vars__Var1",
+                            "num_pipe__Interest_Rate"]
+        
+        if self.to_drop > 0:
+            self.drop_features(X_transformed,
+                               features_to_drop[:self.to_drop])
 
-        transformed = X.copy()
-
-        if self.to_drop == 1:
-            transformed.drop("cat_union__vars__Var2", 
-                             axis = 1, inplace = True)
-
-        if self.to_drop == 2:
-            transformed.drop(["cat_union__vars__Var2", 
-                              "cat_union__remainder__Mobile_Verified"], 
-                             axis = 1, inplace = True)
-
-        if self.to_drop == 3:
-            
-            try:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__Loan_Tenure_Applied"], # Loan_Tenure_Applied can be already removed by MixedImputer
-                                 axis = 1, inplace = True)
-            except:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified"], 
-                                 axis = 1, inplace = True)
-                
-        if self.to_drop == 4:
-
-            try:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__Loan_Tenure_Applied", 
-                                  "num_pipe__EMI_Loan_Submitted"], 
-                                 axis = 1, inplace = True)
-            except:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__EMI_Loan_Submitted"], 
-                                 axis = 1, inplace = True)
-
-        if self.to_drop == 5:
-
-            try:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__Loan_Tenure_Applied", 
-                                  "num_pipe__EMI_Loan_Submitted", 
-                                  "cat_union__vars__Var1"], 
-                                 axis = 1, inplace = True)
-            except:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__EMI_Loan_Submitted", 
-                                  "cat_union__vars__Var1"], 
-                                 axis = 1, inplace = True)
-
-        if self.to_drop == 6:
-
-            try:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__Loan_Tenure_Applied", 
-                                  "num_pipe__EMI_Loan_Submitted", 
-                                  "cat_union__vars__Var1", 
-                                  "num_pipe__Interest_Rate"], 
-                                 axis = 1, inplace = True)
-            except:
-                transformed.drop(["cat_union__vars__Var2", 
-                                  "cat_union__remainder__Mobile_Verified", 
-                                  "num_pipe__EMI_Loan_Submitted", 
-                                  "cat_union__vars__Var1", 
-                                  "num_pipe__Interest_Rate"], 
-                                 axis = 1, inplace = True)
-
-        return transformed
+        return X_transformed
