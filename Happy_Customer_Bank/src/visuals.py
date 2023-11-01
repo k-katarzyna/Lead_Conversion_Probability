@@ -195,8 +195,8 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
         ax[i].set_title(estimator_name)
         ax[i].set_xlabel("Threshold")
         ax[i].set_ylabel("Score")
-        ax[i].set_xticks(np.arange(0, 1.1, 0.1))
-        ax[i].set_yticks(np.arange(0, 1.1, 0.1))
+        ax[i].set_xticks(np.arange(0, 1.1, 0.2))
+        ax[i].set_yticks(np.arange(0, 1.1, 0.2))
         ax[i].legend()
 
     plt.tight_layout()
@@ -288,7 +288,7 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
 
     bar_width = 0.2
 
-    fig, ax = plt.subplots(figsize=(12, 4))
+    fig, ax = plt.subplots(figsize=(12, 5))
 
     for i, (name, _) in enumerate(estimators):
         x = np.arange(len(metrics)) + i * bar_width
@@ -304,6 +304,7 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
 
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
     ax.set_xticklabels(metrics)
+    ax.set_ylim(0, 1)
     ax.legend()
     ax.set_ylabel("Score")
     ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")
