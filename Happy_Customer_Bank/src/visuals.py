@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
 from sklearn import set_config
 set_config(transform_output="pandas")
@@ -176,28 +177,36 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
     optimal_thresholds (list): An array of optimal threshold values corresponding to each estimator.
     """
     
-    fig, ax = plt.subplots(2, 2, figsize=(12, 8))
+    fig, ax = plt.subplots(2, 2, figsize=(14, 9))
     ax = ax.flatten()
 
     for i, (estimator_name, scores) in enumerate(results.items()): 
 
-        f1_scores, precision_scores, recall_scores = scores
+        f1_scores, precision_scores, recall_scores, g_mean_scores = scores
         max_f1_idx = np.argmax(f1_scores)
         max_f1 = f1_scores[max_f1_idx]
 
-        ax[i].plot(thresholds, precision_scores, color="orange", label="Precision")
-        ax[i].plot(thresholds, recall_scores, color="blue", label="Recall")
-        ax[i].plot(thresholds, f1_scores, color="green", label="F1 Score")
-        ax[i].scatter(thresholds[max_f1_idx], max_f1, c = "darkgreen", label = f"Max F1 = {max_f1:.2f}")
+        ax[i].plot(thresholds, precision_scores, 
+                   color="orange", label="Precision")
+        ax[i].plot(thresholds, recall_scores, 
+                   color="blue", label="Recall")
+        ax[i].plot(thresholds, g_mean_scores, 
+                   color="red", label="Geometric mean")
+        ax[i].plot(thresholds, f1_scores, 
+                   color="green", label="F1 score")
+        ax[i].scatter(thresholds[max_f1_idx], max_f1, 
+                      c = "darkgreen", label = f"Max F1 = {max_f1:.2f}")
 
-        ax[i].axvline(x=optimal_thresholds[i], color="black", linestyle="--", linewidth=0.8, label=f"Optimal threshold = {optimal_thresholds[i]}")
+        ax[i].axvline(x=optimal_thresholds[i], 
+                      color="black", linestyle="--", linewidth=0.8, 
+                      label=f"Optimal thresh = {optimal_thresholds[i]}")
 
         ax[i].set_title(estimator_name)
         ax[i].set_xlabel("Threshold")
         ax[i].set_ylabel("Score")
         ax[i].set_xticks(np.arange(0, 1.1, 0.2))
         ax[i].set_yticks(np.arange(0, 1.1, 0.2))
-        ax[i].legend()
+        ax[i].legend(loc = "upper right")
 
     plt.tight_layout()
     plt.show()
@@ -220,26 +229,35 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
     y_train (pd.Series): Target values for training data.
     y_test (pd.Series): Target values for testing data.
     """
-
-    fig, ax = plt.subplots(1, 2, figsize = (12,5))
+    
+    auc_scores = []
+    
+    fig, ax = plt.subplots(1, 2, figsize = (14, 5.5))
 
     for (name, estimator), opt_threshold in zip(estimators, optimal_thresholds):
 
         estimator.fit(X_train, y_train)
         y_proba = estimator.predict_proba(X_test)[:, 1]
-
+        
+        auc = np.round(roc_auc_score(y_test, y_proba), 4)
+        auc_scores.append(auc)
+                       
         fpr, tpr, thresholds = roc_curve(y_test, y_proba)
 
         idx = np.argmin(np.abs(thresholds - opt_threshold))
         fpr_value, tpr_value, threshold_value = fpr[idx], tpr[idx], thresholds[idx]
 
-        ax[0].plot(fpr, tpr, label = f"{name} (AUC = {np.round(roc_auc_score(y_test, y_proba), 3)})")
+        ax[0].plot(fpr, tpr, 
+                   label = f"{name} (AUC={auc:.3f})")
         ax[1].plot(fpr, tpr)
-        ax[1].scatter(fpr_value, tpr_value, s=150, label = f"{name} threshold = {np.round(threshold_value, 2)}")
+        ax[1].scatter(fpr_value, tpr_value, 
+                      s=150, label = f"{name} (t={threshold_value:.2f})")
 
-    ax[0].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
+    ax[0].plot([0, 1], [0, 1], 
+               linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
     ax[0].set_title("ROC curves")
-    ax[1].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6)
+    ax[1].plot([0, 1], [0, 1], 
+               linestyle = '--', color = 'grey', linewidth = 0.6)
     ax[1].set_xlim(0.0, 0.6)
     ax[1].set_ylim(0.4, 1.0)
     ax[1].set_title("ROC curves zoomed in at top left, optimal classification thresholds")
@@ -251,6 +269,8 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
 
     plt.tight_layout()
     plt.show()
+                       
+    return auc_scores
     
 
 def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
@@ -288,26 +308,21 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
 
     bar_width = 0.2
 
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(14, 5))
 
     for i, (name, _) in enumerate(estimators):
         x = np.arange(len(metrics)) + i * bar_width
         bars = ax.bar(x, results[i], bar_width, label=name)
-
-        for bar, value in zip(bars, results[i]):
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), 
-                    f"{value:.2f}", 
-                    ha='center', va='bottom', 
-                    bbox=dict(boxstyle = "round",
-                              facecolor='white',
-                              alpha=0.5))
-
+    
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
     ax.set_xticklabels(metrics)
     ax.set_ylim(0, 1)
+    ax.set_yticks(np.arange(0, 1.0, 0.05), minor=True)
+    ax.grid(axis='y', linestyle='-', which='minor', linewidth=0.2, color='gray', alpha=0.5)
+    ax.grid(axis='y', linestyle='-', which='major', linewidth=0.4, color='gray', alpha=0.5)
     ax.legend()
     ax.set_ylabel("Score")
     ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")
-
+    
     plt.tight_layout()
     plt.show()

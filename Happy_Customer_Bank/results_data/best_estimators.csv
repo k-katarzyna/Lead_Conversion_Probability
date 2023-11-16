@@ -1,5 +1,5 @@
 Model,ROC_AUC,Time[s]
-HistGradientBoostingClassifier,0.8497,5.59
-BalancedRandomForestClassifier,0.8487,9.46
-BalancedBaggingClassifier,0.8468,12.2
-RandomForestClassifier,0.8466,11.76
+HistGradientBoostingClassifier,0.8526,1.57
+BalancedRandomForestClassifier,0.8499,6.1
+BalancedBaggingClassifier,0.8496,18.64
+RandomForestClassifier,0.8498,15.24

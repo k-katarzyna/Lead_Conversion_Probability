@@ -1,0 +1,76 @@
+Model,Parameters,ROC_AUC,Time[s],Imputation
+BaggingClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.6452,1.35,SimpleImputer
+BaggingClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.6228,290.63,KNNImputer
+BaggingClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.6367,6.99,IterativeImputer
+BaggingClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.8086,0.95,none
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8415,1.61,SimpleImputer
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8386,290.05,KNNImputer
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.842,6.04,IterativeImputer
+HistGradientBoostingClassifier,"class_weight: None, min_samples_leaf: 20",0.8442,1.49,none
+RandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: sqrt",0.7759,2.04,SimpleImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: sqrt",0.776,291.41,KNNImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: sqrt",0.7817,6.58,IterativeImputer
+BalancedBagging_UnderSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.8148,0.55,SimpleImputer
+BalancedBagging_UnderSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.8109,290.72,KNNImputer
+BalancedBagging_UnderSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.813,4.98,IterativeImputer
+BalancedBagging_UnderSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.8258,0.47,none
+BalancedBagging_OverSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.614,3.74,SimpleImputer
+BalancedBagging_OverSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.6201,292.79,KNNImputer
+BalancedBagging_OverSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.6264,9.27,IterativeImputer
+BalancedBagging_OverSampling,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.7839,3.85,none
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: sqrt",0.8431,1.51,SimpleImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: sqrt",0.8405,294.41,KNNImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: sqrt",0.8382,6.16,IterativeImputer
+EasyEnsembleClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.8324,2.99,SimpleImputer
+EasyEnsembleClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.8305,294.04,KNNImputer
+EasyEnsembleClassifier,"n_estimators: 10, max_samples: 1.0, max_features: 1.0",0.83,7.41,IterativeImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 0.5, max_features: 1.0",0.836,4.97,SimpleImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 0.5, max_features: 1.0",0.8306,296.83,KNNImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 0.5, max_features: 1.0",0.8342,11.04,IterativeImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 0.5, max_features: 1.0",0.8326,5.72,none
+BaggingClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8369,7.56,SimpleImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8348,302.02,KNNImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8358,14.93,IterativeImputer
+BaggingClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8351,7.45,none
+HistGradientBoostingClassifier,"class_weight: {1: 20}, min_samples_leaf: 20",0.8459,1.75,SimpleImputer
+HistGradientBoostingClassifier,"class_weight: {1: 20}, min_samples_leaf: 20",0.8446,299.98,KNNImputer
+HistGradientBoostingClassifier,"class_weight: {1: 20}, min_samples_leaf: 20",0.8474,6.07,IterativeImputer
+HistGradientBoostingClassifier,"class_weight: {1: 20}, min_samples_leaf: 20",0.8482,1.82,none
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8443,1.71,SimpleImputer
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8421,298.37,KNNImputer
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8421,6.63,IterativeImputer
+HistGradientBoostingClassifier,"class_weight: {1: 50}, min_samples_leaf: 50",0.8457,1.49,none
+RandomForestClassifier,"n_estimators: 100, class_weight: {1: 50}, min_samples_leaf: 20, max_samples: 0.3, max_features: 0.5",0.8424,1.93,SimpleImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: {1: 50}, min_samples_leaf: 20, max_samples: 0.3, max_features: 0.5",0.8363,298.23,KNNImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: {1: 50}, min_samples_leaf: 20, max_samples: 0.3, max_features: 0.5",0.8379,7.61,IterativeImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: {1: 100}, min_samples_leaf: 50, max_samples: 0.6, max_features: 1.0",0.8412,4.49,SimpleImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: {1: 100}, min_samples_leaf: 50, max_samples: 0.6, max_features: 1.0",0.8382,297.25,KNNImputer
+RandomForestClassifier,"n_estimators: 100, class_weight: {1: 100}, min_samples_leaf: 50, max_samples: 0.6, max_features: 1.0",0.8411,11.44,IterativeImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8413,3.08,SimpleImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8381,300.85,KNNImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8376,7.38,IterativeImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.84,3.07,none
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 0.5",0.8383,3.69,SimpleImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 0.5",0.8334,301.87,KNNImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 0.5",0.8347,8.56,IterativeImputer
+BalancedBagging_UnderSampling,"n_estimators: 100, max_samples: 1.0, max_features: 0.5",0.8374,3.73,none
+BalancedBagging_OverSampling,"n_estimators: 50, max_samples: 1.0, max_features: 1.0",0.7226,21.78,SimpleImputer
+BalancedBagging_OverSampling,"n_estimators: 50, max_samples: 1.0, max_features: 1.0",0.7321,315.43,KNNImputer
+BalancedBagging_OverSampling,"n_estimators: 50, max_samples: 1.0, max_features: 1.0",0.7276,29.0,IterativeImputer
+BalancedBagging_OverSampling,"n_estimators: 50, max_samples: 1.0, max_features: 1.0",0.7983,18.73,none
+BalancedBagging_OverSampling,"n_estimators: 100, max_samples: 0.5, max_features: 0.5",0.7223,7.1,SimpleImputer
+BalancedBagging_OverSampling,"n_estimators: 100, max_samples: 0.5, max_features: 0.5",0.7649,304.93,KNNImputer
+BalancedBagging_OverSampling,"n_estimators: 100, max_samples: 0.5, max_features: 0.5",0.7758,12.22,IterativeImputer
+BalancedBagging_OverSampling,"n_estimators: 100, max_samples: 0.5, max_features: 0.5",0.7939,6.94,none
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: 1.0",0.8445,1.62,SimpleImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: 1.0",0.8424,302.35,KNNImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 1, max_samples: None, max_features: 1.0",0.8428,6.28,IterativeImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 20, max_samples: None, max_features: 0.5",0.8351,1.5,SimpleImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 20, max_samples: None, max_features: 0.5",0.8339,297.73,KNNImputer
+BalancedRandomForestClassifier,"n_estimators: 100, class_weight: None, min_samples_leaf: 20, max_samples: None, max_features: 0.5",0.8308,6.07,IterativeImputer
+EasyEnsembleClassifier,"n_estimators: 20, max_samples: 1.0, max_features: 1.0",0.8267,6.18,SimpleImputer
+EasyEnsembleClassifier,"n_estimators: 20, max_samples: 1.0, max_features: 1.0",0.8288,303.36,KNNImputer
+EasyEnsembleClassifier,"n_estimators: 20, max_samples: 1.0, max_features: 1.0",0.8269,10.09,IterativeImputer
+EasyEnsembleClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8349,28.44,SimpleImputer
+EasyEnsembleClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.834,320.03,KNNImputer
+EasyEnsembleClassifier,"n_estimators: 100, max_samples: 1.0, max_features: 1.0",0.8315,32.18,IterativeImputer
