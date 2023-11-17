@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
 from sklearn import set_config
+from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
 
 plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
@@ -268,6 +268,7 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
         ax.set_ylabel("True positive rate")
 
     plt.tight_layout()
+    # plt.savefig("results_data/roc_curves.png", dpi = 300)
     plt.show()
                        
     return auc_scores

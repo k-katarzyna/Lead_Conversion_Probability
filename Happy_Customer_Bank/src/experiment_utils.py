@@ -1,20 +1,19 @@
 import os
 from copy import deepcopy
-from warnings import filterwarnings, warn
+from warnings import filterwarnings
 from joblib import Parallel, delayed, dump
 
 import pandas as pd
 import numpy as np
 
+from sklearn import set_config
 from sklearn.compose import make_column_transformer
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, confusion_matrix, f1_score
 from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
-from sklearn.feature_selection import SelectFromModel
-from sklearn import set_config
 from imblearn.metrics import geometric_mean_score
 
 filterwarnings("ignore")
@@ -94,7 +93,7 @@ def create_models(base_models, model_params = None):
 def prepare_models_info(models, params_to_save):
     
     """
-    Extract model names and parameters for a list of machine learning models.
+    Extracts model names and parameters for a list of machine learning models.
 
     Args:
     ------------
@@ -228,7 +227,6 @@ def imputation_test(X, y, models, preprocessors, save_results_path):
                                    model_params)
 
                 result["Imputation"] = imputer
-                
                 results.append(result)
                 
         except:
