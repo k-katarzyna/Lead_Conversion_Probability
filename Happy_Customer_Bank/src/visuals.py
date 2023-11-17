@@ -5,15 +5,15 @@ import seaborn as sns
 
 from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
 from sklearn import set_config
-set_config(transform_output="pandas")
-
-from src.utils import to_labels
 
 plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
 plt.rcParams.update({"axes.grid": True})
 plt.rcParams["grid.linewidth"] = 0.2
 plt.rcParams["grid.alpha"] = 0.5
+set_config(transform_output="pandas")
+
+from src.utils import to_labels
 
 
 def missings_plot(data):
@@ -232,7 +232,7 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
     
     auc_scores = []
     
-    fig, ax = plt.subplots(1, 2, figsize = (14, 5.5))
+    fig, ax = plt.subplots(1, 2, figsize = (13, 5))
 
     for (name, estimator), opt_threshold in zip(estimators, optimal_thresholds):
 
@@ -251,7 +251,7 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
                    label = f"{name} (AUC={auc:.3f})")
         ax[1].plot(fpr, tpr)
         ax[1].scatter(fpr_value, tpr_value, 
-                      s=150, label = f"{name} (t={threshold_value:.2f})")
+                      s=200, label = f"{name} (t={threshold_value:.2f})")
 
     ax[0].plot([0, 1], [0, 1], 
                linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
@@ -308,7 +308,7 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
 
     bar_width = 0.2
 
-    fig, ax = plt.subplots(figsize=(14, 5))
+    fig, ax = plt.subplots(figsize=(13, 5))
 
     for i, (name, _) in enumerate(estimators):
         x = np.arange(len(metrics)) + i * bar_width

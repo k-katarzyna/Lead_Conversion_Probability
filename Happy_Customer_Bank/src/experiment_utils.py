@@ -1,8 +1,8 @@
-from joblib import Parallel, delayed, dump
-from warnings import filterwarnings, warn
-from copy import deepcopy
-
 import os
+from copy import deepcopy
+from warnings import filterwarnings, warn
+from joblib import Parallel, delayed, dump
+
 import pandas as pd
 import numpy as np
 
@@ -15,14 +15,14 @@ from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from sklearn.feature_selection import SelectFromModel
 from sklearn import set_config
-
 from imblearn.metrics import geometric_mean_score
+
+filterwarnings("ignore")
+set_config(transform_output="pandas")
 
 from src.utils import to_labels
 from src.visuals import thresholds_results_plot
 
-filterwarnings("ignore")
-set_config(transform_output="pandas")
 
 RANDOM_STATE = 42
 CV_SCHEME = StratifiedKFold(n_splits = 5, shuffle = True, random_state = RANDOM_STATE)

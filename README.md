@@ -8,10 +8,10 @@ Several challenges are present, including:
 * highly imbalanced classes,
 * a large number of missing values,
 * various data types,
-* some variables with unknown meanings.
+* some variables with unknown meaning.
 
 ### The goal
-The primary task involves **predicting the probability of loan disbursal**, with the evaluation metric being **ROC_AUC**. Narrowing down potential customers to a smaller group with a high probability of loan approval will enable the bank to operate more efficiently in increasing its conversion rate.
+The primary task involves **predicting the probability of loan disbursal**, with the evaluation metric being **ROC AUC**. Narrowing down potential customers to a smaller group with a high probability of loan approval will enable the bank to operate more efficiently in increasing its conversion rate.
 
 As a subsequent step, the classification skills of the tested models were also determined by applying different discrimination thresholds.
 
@@ -19,7 +19,7 @@ As a subsequent step, the classification skills of the tested models were also d
 The project progress, results and comments can be found in the notebook "Project-main." Custom project utilities are located in the "src" module. Due to the extended duration of some experiments, their results were saved in the "results_data" folder.
 
 ### Setting up the project environment
-To recreate environment using the included YAML file:
+To recreate the environment using the included YAML file:
 ```bash
 conda env create -f environment.yml
 ```
@@ -27,7 +27,7 @@ To activate the environment:
 ```bash
 conda activate happy_customer_bank
 ```
-To create the environment Jupyter kernel:
+To create the Jupyter environment kernel:
 ```bash
 python -m ipykernel install --user --name=happy_customer_bank
 ```

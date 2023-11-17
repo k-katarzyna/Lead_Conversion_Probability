@@ -1,10 +1,9 @@
 from warnings import filterwarnings
-filterwarnings("ignore")
-
 import pandas as pd
 import numpy as np
-
 from sklearn.base import BaseEstimator, TransformerMixin
+
+filterwarnings("ignore")
 
 from src.cities_lists import TIER_1, TIER_2
 
