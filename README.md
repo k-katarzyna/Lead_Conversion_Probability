@@ -34,7 +34,7 @@ The project involved an extensive exploration of various aspects, including data
 
 Following the initial testing phase, four models were identified, demonstrating similar behavior and potential effectiveness for the problem at hand. The highest achieved ROC AUC score, reaching 0.85, was attained by the HistGradientBoostingClassifier. The final results can be seen below.
 
-![Roc curves]("Happy_Customer_Bank/results_data/images/roc_curves.png")
+![Roc curves](Happy_Customer_Bank/results_data/images/roc_curves.png)
 
 This solution serves as a promising starting point for further efforts to enhance customer conversion rates at the bank, allowing to identify customer segments with a high probability of loan approval. However, it should be noted that the developed models may not be suitable for precise classification, regardless of the chosen discrimination threshold.
 
