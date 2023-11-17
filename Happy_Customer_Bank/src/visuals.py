@@ -266,9 +266,9 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
         ax.legend()
         ax.set_xlabel("False positive rate")
         ax.set_ylabel("True positive rate")
-
+    
+    # plt.savefig("results_data/images/roc_curves.png", dpi = 300)
     plt.tight_layout()
-    # plt.savefig("results_data/roc_curves.png", dpi = 300)
     plt.show()
                        
     return auc_scores
