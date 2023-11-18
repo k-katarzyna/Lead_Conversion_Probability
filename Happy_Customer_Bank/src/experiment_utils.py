@@ -10,7 +10,7 @@ from sklearn import set_config
 from sklearn.compose import make_column_transformer
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import roc_auc_score, precision_score, recall_score, confusion_matrix, f1_score
+from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
@@ -385,7 +385,7 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
     grids (list): List of hyperparameter grids corresponding to each model.
     preprocessors (list): List of preprocessors for feature engineering.
     n_iter (int): Number of iterations for randomized search.
-    save_artifact_folder (str): Folder path to save the best models as a PKL file.
+    save_artifact_folder (str): Folder path to save the best models as serialized files.
     save_results_path (str): Path to save the results as a CSV file.
 
     Returns:
@@ -439,7 +439,7 @@ def create_results_dataframe(*args, saving_csv = None):
     ----------
     *args: Variable number of dictionaries or dataframes containing results data.
     saving_csv(str or NoneType): default = None
-        Path to save created dataframe as csv file, None means no saving.
+        Path to save created dataframe as CSV file, None means no saving.
     
     Returns:
     -----------
@@ -543,8 +543,8 @@ def process_fold(train_idx, test_idx, X, y, estimator):
     -----------
     train_idx (np.array): Indices of the training data.
     test_idx (np.array): Indices of the testing data.
-    X (pd.DataFrame): Input features.
-    y (pd.Series): Target labels.
+    X (pd.DataFrame): The input data.
+    y (pd.Series): The target labels.
     estimator: Estimator for fitting and predicting probabilities.
 
     Returns:
@@ -574,8 +574,8 @@ def evaluate_discrimination_thresholds(estimators, X, y, thresholds):
     Args:
     -----------
     estimators (list of tuples): List of (estimator_name, estimator) pairs.
-    X (pd.DataFrame): Input features.
-    y (pd.Series): Target labels.
+    X (pd.DataFrame): The input features.
+    y (pd.Series): The target labels.
     thresholds (np.array): List of threshold values to evaluate.
 
     Returns:

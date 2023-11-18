@@ -23,7 +23,7 @@ def missings_plot(data):
 
     Args:
     -----------
-        data (pd.DataFrame): The input DataFrame containing the data.
+    data (pd.DataFrame): The input DataFrame containing the data.
     """
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 4))
@@ -32,7 +32,7 @@ def missings_plot(data):
     number_of_nan_values = [data[feature].isnull().sum() for feature in features_with_nan]
 
     ax1.barh(features_with_nan, number_of_nan_values, color="steelblue")
-    ax1.set_title("Missing values")
+    ax1.set_title("Null values")
     ax1.set_xscale("log")
 
     for number, feature in zip(number_of_nan_values, features_with_nan):
@@ -109,6 +109,7 @@ def countplots(*args, data):
     Creates countplots for one or more categorical features.
 
     Args:
+    -----------
     *args (str): One or more feature names to create countplots for.
     data (pd.DataFrame): The dataframe containing the data to visualize.
     """
@@ -136,7 +137,7 @@ def countplots(*args, data):
         plt.show()
 
 
-def feature_importance_plot(importances, feature_names, title="Feature Importances"):
+def feature_importance_plot(importances, feature_names):
     
     """
     Creates horizontal barplot for feature importances.
@@ -159,7 +160,7 @@ def feature_importance_plot(importances, feature_names, title="Feature Importanc
     plt.yticks(range(len(sorted_names)), sorted_names)
     plt.xlabel("Feature Importance")
     plt.ylabel("Feature Name")
-    plt.title(title)
+    plt.title("Feature Importances")
     plt.tight_layout()
     plt.show()
 
@@ -167,14 +168,14 @@ def feature_importance_plot(importances, feature_names, title="Feature Importanc
 def thresholds_results_plot(results, thresholds, optimal_thresholds):
     
     """
-    Plots precision, recall, and F1 Score for different discrimination thresholds.
+    Plots geometric mean, precision, recall and F1 Score for different discrimination thresholds.
 
     Args:
+    -----------
     results (dict): A dictionary containing results for different estimators.
         Each key-value pair represents the name of an estimator and its corresponding scores.
-        The scores includes precision, recall, and F1 Score.
     thresholds (np.array): An array of threshold values.
-    optimal_thresholds (list): An array of optimal threshold values corresponding to each estimator.
+    optimal_thresholds (list): A list of optimal threshold values corresponding to each estimator.
     """
     
     fig, ax = plt.subplots(2, 2, figsize=(14, 9))
@@ -215,9 +216,8 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
 def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
     
     """
-    Plots ROC curves for each estimator, including the AUC (Area Under the Curve) score in the legend,
-    and marks the optimal classification threshold for each estimator on the zoomed-in plot.
-
+    Plots ROC curves for each estimator, including the ROC AUC score in the legend and marks 
+    the optimal classification threshold for each estimator on the zoomed-in plot.
     The zoomed-in plot focuses on the top-left area of the ROC curves where the thresholds are marked.
 
     Args:
@@ -228,6 +228,10 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
     X_test (pd.DataFrame): Testing data.
     y_train (pd.Series): Target values for training data.
     y_test (pd.Series): Target values for testing data.
+    
+    Returns:
+    -----------
+    list: ROC AUC score for each estimator.
     """
     
     auc_scores = []
@@ -277,7 +281,7 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
 def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
     
     """
-    Calculates and compares several classification metrics, including Precision, Recall, F1 Score, Balanced Accuracy,
+    Calculates and compares several classification metrics, including precision, recall, F1 score, balanced accuracy
     and the percentage of positive class predictions for each estimator using their optimal discrimination thresholds.
 
     Args:

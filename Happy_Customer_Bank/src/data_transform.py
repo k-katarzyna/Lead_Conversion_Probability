@@ -18,7 +18,7 @@ def age_calculator(dob_column, date_for_calc = "04-08-2015"):
     dob_column (pd.Series): The column with dates of birth.
     date_for_calc (str): default="04-08-2015"
         A reference date in the format "dd-mm-yyyy". By default, age is calculated relative to 
-        this date (the date the Happy Customer Bank task appeared).
+        the date the Happy Customer Bank task appeared.
     """
     
     dob_column = pd.to_datetime(dob_column)
