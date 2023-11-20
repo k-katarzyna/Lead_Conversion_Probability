@@ -38,6 +38,6 @@ In the initial testing phase, four models were identified that exhibited similar
 
 ![Roc curves](Happy_Customer_Bank/results_data/images/roc_curves.png)
 
-This solution can serve as a promising starting point for further efforts to enhance the customer conversion rate at the bank. However, it should be noted that the developed models may not be suitable for precise classification, irrespective of the chosen discrimination threshold.
+This solution could serve as a promising starting point for further efforts to enhance the customer conversion rate at the bank. However, it should be noted that the developed models may not be suitable for precise classification, irrespective of the chosen discrimination threshold.
 
 The experiments conducted represent only an initial exploration in tackling this challenge. As the focus was primarily on tree-based ensembles, there is potential to explore other model types and different data transformations.

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn import set_config
-from sklearn.metrics import roc_curve, roc_auc_score, precision_score, recall_score, f1_score, balanced_accuracy_score
+from sklearn.metrics import roc_curve, roc_auc_score
 
 plt.rcParams["axes.spines.top"] = False
 plt.rcParams["axes.spines.right"] = False
@@ -13,7 +13,7 @@ plt.rcParams["grid.linewidth"] = 0.2
 plt.rcParams["grid.alpha"] = 0.5
 set_config(transform_output="pandas")
 
-from src.utils import to_labels
+from src.utils import calculate_classification_metrics
 
 
 def missings_plot(data):
@@ -213,7 +213,7 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
     plt.show()
     
     
-def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
+def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
     
     """
     Plots ROC curves for each estimator, including the ROC AUC score in the legend and marks 
@@ -243,7 +243,7 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
         estimator.fit(X_train, y_train)
         y_proba = estimator.predict_proba(X_test)[:, 1]
         
-        auc = np.round(roc_auc_score(y_test, y_proba), 4)
+        auc = np.round(roc_auc_score(y_test, y_proba), 3)
         auc_scores.append(auc)
                        
         fpr, tpr, thresholds = roc_curve(y_test, y_proba)
@@ -252,16 +252,14 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
         fpr_value, tpr_value, threshold_value = fpr[idx], tpr[idx], thresholds[idx]
 
         ax[0].plot(fpr, tpr, 
-                   label = f"{name} (AUC={auc:.3f})")
+                   label = f"{name} (AUC={auc})")
         ax[1].plot(fpr, tpr)
         ax[1].scatter(fpr_value, tpr_value, 
                       s=200, label = f"{name} (t={threshold_value:.2f})")
 
-    ax[0].plot([0, 1], [0, 1], 
-               linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
+    ax[0].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
     ax[0].set_title("ROC curves")
-    ax[1].plot([0, 1], [0, 1], 
-               linestyle = '--', color = 'grey', linewidth = 0.6)
+    ax[1].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6)
     ax[1].set_xlim(0.0, 0.6)
     ax[1].set_ylim(0.4, 1.0)
     ax[1].set_title("ROC curves zoomed in at top left, optimal classification thresholds")
@@ -278,10 +276,10 @@ def roc_curves(estimators, optimal_thresholds, X_train, X_test, y_train, y_test)
     return auc_scores
     
 
-def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
+def classification_metrics_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_test):
     
     """
-    Calculates and compares several classification metrics, including precision, recall, F1 score, balanced accuracy
+    Plots and compares several classification metrics, including precision, recall, F1 score, balanced accuracy
     and the percentage of positive class predictions for each estimator using their optimal discrimination thresholds.
 
     Args:
@@ -293,31 +291,17 @@ def classification_metrics(estimators, optimal_thresholds, X_train, X_test, y_tr
     y_train (pd.Series): Target values for training data.
     y_test (pd.Series): Target values for testing data.
     """
-    
-    metrics = ["Precision", "Recall", "F1 Score", "Balanced Accuracy", "% of positive class predictions"]
 
-    results = []
-
-    for (_, estimator), opt_threshold in zip(estimators, optimal_thresholds):
-        estimator.fit(X_train, y_train)
-        y_proba = estimator.predict_proba(X_test)[:, 1]
-        y_pred = to_labels(y_proba, opt_threshold)
-
-        scores = [precision_score(y_test, y_pred),
-                  recall_score(y_test, y_pred),
-                  f1_score(y_test, y_pred),
-                  balanced_accuracy_score(y_test, y_pred),
-                  np.mean(y_pred)]
-
-        results.append(scores)
-
+    metrics, scores = calculate_classification_metrics(estimators,
+                                                       optimal_thresholds,
+                                                       X_train, X_test, y_train, y_test)
     bar_width = 0.2
 
     fig, ax = plt.subplots(figsize=(13, 5))
 
     for i, (name, _) in enumerate(estimators):
         x = np.arange(len(metrics)) + i * bar_width
-        bars = ax.bar(x, results[i], bar_width, label=name)
+        bars = ax.bar(x, scores[i], bar_width, label=name)
     
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
     ax.set_xticklabels(metrics)

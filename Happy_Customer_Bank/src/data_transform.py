@@ -237,7 +237,6 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
     to_drop: int, default = 0 
         The number of least important features to drop (0-8). For example, if to_drop=2, it will drop
         the two least important features.
-
     """
     
     def __init__(self, 
