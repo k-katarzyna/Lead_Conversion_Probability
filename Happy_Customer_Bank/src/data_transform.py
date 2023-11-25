@@ -8,27 +8,25 @@ filterwarnings("ignore")
 from src.cities_lists import TIER_1, TIER_2
 
 
-def age_calculator(dob_column, date_for_calc = "04-08-2015"):
+def age_calculator(dates_of_birth, reference_dates):
     
     """
-    Calculates age from date of birth.
+    Calculates age from date of birth using given reference dates.
 
     Args:
     -----------
-    dob_column (pd.Series): The column with dates of birth.
-    date_for_calc (str): default="04-08-2015"
-        A reference date in the format "dd-mm-yyyy". By default, age is calculated relative to 
-        the date the Happy Customer Bank task appeared.
+    dates_of_birth (pd.Series): The column with dates of birth, which will be transformed to age.
+    reference_dates (pd.Series): The column with reference dates (lead creation dates).
     """
     
-    dob_column = pd.to_datetime(dob_column)
+    dates_of_birth = pd.to_datetime(dates_of_birth)
+    reference_dates = pd.to_datetime(reference_dates)
         
-    dob_column = dob_column.apply(
-        lambda x: x - pd.DateOffset(years=100) if x.year > 2014 else x
-    )
-    reference_date = pd.to_datetime(date_for_calc)
+    dates_of_birth = dates_of_birth.apply(lambda x: x - pd.DateOffset(years = 100) 
+                                          if x.year > 2014 
+                                          else x)
 
-    return (reference_date - dob_column).dt.days // 365
+    return (reference_dates - dates_of_birth).dt.days // 365
 
 
 def data_preparing(data, basic_preparing = False):
@@ -49,33 +47,38 @@ def data_preparing(data, basic_preparing = False):
     
     data = data.copy()
     
-    X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account", "Device_Type", "LoggedIn", "Disbursed"], axis = 1)
-    y = data.Disbursed
+    data["DOB"] = age_calculator(data["DOB"], data["Lead_Creation_Date"])
     
-    X["DOB"] = age_calculator(X["DOB"])
-    X["Employer_Name"] = X["Employer_Name"].apply(lambda x: 
-                                                  0 if pd.isna(x) or (str(x).isdigit()) 
-                                                  else 1)
+    data["Employer_Name"] = data["Employer_Name"].apply(lambda x: 
+                                                        0 if pd.isna(x) or (str(x).isdigit()) 
+                                                        else 1)
     
-    X.rename(columns={"DOB": "Age", 
-                      "Employer_Name": "Employer_Provided"},
-             inplace = True)
+    data.rename(columns={"DOB": "Age",
+                         "Employer_Name": "Employer_Provided"},
+                inplace = True)
     
     if not basic_preparing:
         
-        for feature, value in zip(["Var1", "Var2", "Source"], [1000] * 3):
-            rare_values = X[feature].value_counts()[data[feature].value_counts() < value].index.tolist()
-            X[feature].replace(rare_values, "Others", inplace = True)
+        threshold = 1000
+        for feature in ["Var1", "Var2", "Source"]:
+            category_counts = data[feature].value_counts()
+            rare_values = category_counts[category_counts < threshold].index.tolist()
+            data[feature].replace(rare_values, "Others", 
+                                  inplace = True)
                 
-        X[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]].fillna(0, inplace = True)
+        data[["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]].fillna(0, inplace = True)
 
-        X["City"] = X["City"].apply(lambda x: 
-                                    "Tier_1" if x in TIER_1 
-                                    else "Tier_2" if x in TIER_2 
-                                    else "Tier_3" if pd.notna(x) 
-                                    else x)
+        data["City"] = data["City"].apply(lambda x: 
+                                          "Tier_1" if x in TIER_1 
+                                          else "Tier_2" if x in TIER_2 
+                                          else "Tier_3" if pd.notna(x) 
+                                          else x)
 
-        X.rename(columns={"City": "City_Size"}, inplace = True)
+        data.rename(columns={"City": "City_Size"}, inplace = True)
+        
+    X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account", "Device_Type", "LoggedIn", "Disbursed"], 
+                  axis = 1)
+    y = data.Disbursed
 
     return X, y
 
@@ -128,8 +131,6 @@ class RareAggregator(BaseEstimator, TransformerMixin):
         for col in self.features_to_group_by_frequency_:
             category_counts = X[col].value_counts()
             self.frequent_categories_[col] = category_counts.index[category_counts > self.threshold].to_list()
-            
-        return self.frequent_categories_
 
     def fit(self, X, y = None):
         
@@ -198,6 +199,7 @@ class MixedImputer(BaseEstimator, TransformerMixin):
         self.fillna_with_0 = ["Loan_Amount_Applied", "Loan_Tenure_Applied", "Existing_EMI"]
 
     def fit(self, X, y = None):
+        
         return self
 
     def transform(self, X):
@@ -214,8 +216,10 @@ class MixedImputer(BaseEstimator, TransformerMixin):
 
         if self.how == "applied_submitted_compression":
             
-            X_transformed["Loan_Amount_Submitted"].fillna(X_transformed["Loan_Amount_Applied"], inplace=True)
-            X_transformed["Loan_Tenure_Submitted"].fillna(X_transformed["Loan_Tenure_Applied"], inplace=True)
+            X_transformed["Loan_Amount_Submitted"].fillna(X_transformed["Loan_Amount_Applied"],
+                                                          inplace=True)
+            X_transformed["Loan_Tenure_Submitted"].fillna(X_transformed["Loan_Tenure_Applied"],
+                                                          inplace=True)
             
             X_transformed.drop(["Loan_Amount_Applied", "Loan_Tenure_Applied"], 
                                axis = 1, inplace = True)
@@ -229,48 +233,47 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
     
     """
     A transformer for removing specified features based on the results of feature importance tests.
-    The feature names to drop are specified as hard-coded strings based on the names used
+    The feature names to drop should be specified as hard-coded strings based on the names used
     in the transformation pipeline.
 
     Parameters:
     -----------
     to_drop: int, default = 0 
-        The number of least important features to drop (0-8). For example, if to_drop=2, it will drop
-        the two least important features.
+        The number of least important features to drop (0-8 or more if longer list of features is given). 
+        For example, if to_drop=2, it will drop the two least important features.
+    least_important_features: list, default: ["num_pipe__Loan_Tenure_Applied",
+                                             "num_pipe__EMI_Loan_Submitted",
+                                             "cat_pipe__multi__Var1",
+                                             "cat_pipe__multi__Var2",
+                                             "cat_pipe__binary__Mobile_Verified_Y",
+                                             "num_pipe__Loan_Amount_Submitted",
+                                             "num_pipe__Interest_Rate",
+                                             "num_pipe__Loan_Tenure_Submitted"]
+        Features to drop (ascending order by feature importance).
     """
     
     def __init__(self, 
-                 to_drop = 0):
+                 to_drop = 0,
+                 least_important_features = ["num_pipe__Loan_Tenure_Applied",
+                                             "num_pipe__EMI_Loan_Submitted",
+                                             "cat_pipe__multi__Var1",
+                                             "cat_pipe__multi__Var2",
+                                             "cat_pipe__binary__Mobile_Verified_Y",
+                                             "num_pipe__Loan_Amount_Submitted",
+                                             "num_pipe__Interest_Rate",
+                                             "num_pipe__Loan_Tenure_Submitted"]
+                ):
         
         self.to_drop = to_drop
+        self.least_important_features = least_important_features
 
     def fit(self, X, y = None): 
+        
         return self
-    
-    def drop_features(self, X_transformed, features):
-        
-        for feature in features:
-            if feature not in X_transformed.columns:
-
-                features.remove(feature)
-        
-        return X_transformed.drop(features, axis = 1, inplace = True)
 
     def transform(self, X):
         
-        X_transformed = X.copy()
-        
-        features_to_drop = ["num_pipe__Loan_Tenure_Applied",
-                            "num_pipe__EMI_Loan_Submitted",
-                            "cat_pipe__multi__Var1",
-                            "cat_pipe__multi__Var2",
-                            "cat_pipe__binary__Mobile_Verified_Y",
-                            "num_pipe__Loan_Amount_Submitted",
-                            "num_pipe__Interest_Rate",
-                            "num_pipe__Loan_Tenure_Submitted"]
-        
-        if self.to_drop > 0:
-            self.drop_features(X_transformed,
-                               features_to_drop[:self.to_drop])
+        features_to_drop = [col for col in self.least_important_features[:self.to_drop] 
+                            if col in X.columns]
 
-        return X_transformed
+        return X.drop(features_to_drop, axis = 1)
