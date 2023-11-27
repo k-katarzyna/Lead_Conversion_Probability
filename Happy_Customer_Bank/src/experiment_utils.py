@@ -17,7 +17,7 @@ from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from imblearn.metrics import geometric_mean_score
 
 filterwarnings("ignore")
-set_config(transform_output="pandas")
+set_config(transform_output = "pandas")
 
 from src.utils import to_labels
 from src.visuals import thresholds_results_plot
@@ -25,7 +25,17 @@ from src.visuals import thresholds_results_plot
 
 RANDOM_STATE = 42
 CV_SCHEME = StratifiedKFold(n_splits = 5, shuffle = True, random_state = RANDOM_STATE)
-PARAMS_TO_SAVE = ["n_estimators", "class_weight", "min_samples_leaf", "max_samples", "max_features"]
+
+PARAMS_TO_SAVE = ["n_estimators", 
+                  "class_weight", 
+                  "min_samples_leaf", 
+                  "max_samples", 
+                  "max_features"]
+
+HANDLE_MISSINGS_MODELS = ["HistGradientBoostingClassifier", 
+                          "BaggingClassifier", 
+                          "BalancedBagging_OverSampling", 
+                          "BalancedBagging_UnderSampling"]
 
 
 def set_model_params(model, model_params):
@@ -127,7 +137,7 @@ def prepare_models_info(models, params_to_save):
     return names, params
 
 
-def data_preprocessing_utils(X):
+def create_preprocessor(X):
     
     """
     Extracts numerical and categorical features and defines a general preprocessor, used in certain experiments.
@@ -184,7 +194,7 @@ def cv_scores(pipeline, X, y, model_name, model_params):
     return {"Model": model_name,
             "Parameters": model_params,
             "ROC_AUC": roc_auc,
-            "Time[s]": time}   
+            "Time[s]": time}
     
     
 def imputation_test(X, y, models, preprocessors, save_results_path):
@@ -198,7 +208,7 @@ def imputation_test(X, y, models, preprocessors, save_results_path):
     y (pd.Series): Target labels.
     models (list): List of models to evaluate.
     preprocessors (list): List of imputing preprocessors.
-    save_results_path (str): Path for saving results as CSV file.
+    save_results_path (str): Path for saving results as CSV file. 
     
     Returns:
     -----------
@@ -206,17 +216,20 @@ def imputation_test(X, y, models, preprocessors, save_results_path):
     """
     
     names, params = prepare_models_info(models, PARAMS_TO_SAVE)
-    num_features, cat_features, _ = data_preprocessing_utils(X)
+    num_features, cat_features, _ = create_preprocessor(X)
     results = []
     
     for model, model_name, model_params in zip(models, names, params):
         
-        try:
-            for imputer, preprocessor in preprocessors:
-
+        for imputer, preprocessor in preprocessors:
+            
+            if imputer == "none" and model_name not in HANDLE_MISSINGS_MODELS:
+                continue
+                
+            else:
                 preprocessor = make_column_transformer((preprocessor, 
                                                         num_features),
-                                                       (OneHotEncoder(sparse_output=False), 
+                                                       (OneHotEncoder(sparse_output = False), 
                                                         cat_features))
 
                 pipeline = make_pipeline(preprocessor, model)
@@ -228,13 +241,42 @@ def imputation_test(X, y, models, preprocessors, save_results_path):
 
                 result["Imputation"] = imputer
                 results.append(result)
-                
-        except:
-            pass
         
     results = create_results_dataframe(results, saving_csv = save_results_path) 
     
     return results
+
+
+def detailed_best_imputation_results(results):
+    
+    """
+    Displays the best ROC_AUC score and its corresponding time for each combination of model and imputation method,
+    excluding 'KNNImputer' method.
+
+    Args:
+    ------------
+    results (pd.DataFrame): A DataFrame containing imputation test results. 
+
+    Returns:
+    ------------
+    pd.DataFrame: A pivoted DataFrame with models as rows, imputation methods as columns, and two sub-columns
+        for each imputation method: 'ROC_AUC' and 'Time[s]'. Each cell in the 'ROC_AUC' sub-column contains 
+        the maximum ROC_AUC value for the corresponding model and imputation method, and each cell in the 'Time[s]'
+        sub-column contains the time associated with achieving that ROC_AUC score.
+    """
+    
+    filtered_results = results[results["Imputation"] != "KNNImputer"].groupby(["Model", "Imputation"])["ROC_AUC"]
+    max_roc_auc = filtered_results.max().reset_index()
+    time = results.loc[filtered_results.idxmax(), ["Model", "Imputation", "Time[s]"]]
+    
+    merged = pd.merge(max_roc_auc, 
+                      time, 
+                      on = ["Model", "Imputation"], 
+                      how = "left")
+    
+    return merged.pivot(index = "Model", 
+                        columns = "Imputation", 
+                        values = ["ROC_AUC", "Time[s]"])
     
     
 def cat_encoding_test(X, y, models, preprocessors, save_results_path):
@@ -256,7 +298,7 @@ def cat_encoding_test(X, y, models, preprocessors, save_results_path):
     """
     
     names, params = prepare_models_info(models, PARAMS_TO_SAVE)
-    num_features, cat_features, _ = data_preprocessing_utils(X)
+    num_features, cat_features, _ = create_preprocessor(X)
     results = []
     
     for model, model_name, model_params in zip(models, names, params):
@@ -304,7 +346,7 @@ def feature_selection_test(X, y, models, estimator, selection_thresholds, save_r
     """
     
     names, params = prepare_models_info(models, PARAMS_TO_SAVE)
-    num_features, cat_features, preprocessor = data_preprocessing_utils(X)
+    num_features, cat_features, preprocessor = create_preprocessor(X)
     results = []
     
     for threshold in selection_thresholds:
@@ -332,6 +374,7 @@ def feature_selection_test(X, y, models, estimator, selection_thresholds, save_r
             results.append(result)
             
     results = create_results_dataframe(results, saving_csv = save_results_path)
+    
     return results
 
 
@@ -353,7 +396,7 @@ def grid_search(X, y, model, param_grid, save_artifact_path):
     float: The best ROC AUC score achieved during grid search.
     """
     
-    _, _, preprocessor = data_preprocessing_utils(X)
+    _, _, preprocessor = create_preprocessor(X)
         
     pipeline = Pipeline([
         ("preprocessor", preprocessor),
@@ -427,6 +470,7 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
         dump(optimizer.best_estimator_, artifact_path)
         
     results = create_results_dataframe(results, saving_csv = save_results_path)
+    
     return results
 
 
@@ -589,8 +633,8 @@ def evaluate_discrimination_thresholds(estimators, X, y, thresholds):
 
     X, y = X.copy(), y.copy()
 
-    X.reset_index(drop=True, inplace=True)
-    y.reset_index(drop=True, inplace=True)
+    X.reset_index(drop = True, inplace = True)
+    y.reset_index(drop = True, inplace = True)
 
     for estimator_name, estimator in estimators:
 
@@ -599,7 +643,7 @@ def evaluate_discrimination_thresholds(estimators, X, y, thresholds):
         recall_scores = []
         g_mean_scores = []
         
-        results_per_fold = Parallel(n_jobs=-1)(
+        results_per_fold = Parallel(n_jobs = -1)(
             delayed(process_fold)(train_idx, test_idx, X, y, estimator)
             for train_idx, test_idx in CV_SCHEME.split(X, y)
             )

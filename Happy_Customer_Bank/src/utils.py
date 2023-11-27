@@ -5,6 +5,26 @@ import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score, balanced_accuracy_score
 
 
+def load_city_list(file_path):
+    
+    """
+    Loads a list of cities from a given txt file. Cities are expected to be separated by commas.
+
+    Args:
+    ------
+    file_path (str): The path to the file containing city names.
+
+    Returns:
+    --------
+    list: A list containing all the city names from the file.
+    """
+    
+    with open(file_path, 'r') as file:
+        line = file.readline()
+        cities = [city.strip() for city in line.split(',')]
+    return cities
+
+
 def to_labels(y_proba, threshold):
     
     """
@@ -26,11 +46,11 @@ def to_labels(y_proba, threshold):
 def load_estimators(folder_path):
     
     """
-    Loads previously optimized estimators from saved pickle files.
+    Loads previously optimized estimators from saved artifacts.
 
     Args:
     -----------
-    folder_path (str): Path to the folder containing saved pickle files.
+    folder_path (str): Path to the folder containing saved PKL files.
 
     Returns:
     -----------

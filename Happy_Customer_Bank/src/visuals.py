@@ -11,7 +11,7 @@ plt.rcParams["axes.spines.right"] = False
 plt.rcParams.update({"axes.grid": True})
 plt.rcParams["grid.linewidth"] = 0.2
 plt.rcParams["grid.alpha"] = 0.5
-set_config(transform_output="pandas")
+set_config(transform_output = "pandas")
 
 from src.utils import calculate_classification_metrics
 
@@ -307,8 +307,8 @@ def classification_metrics_plot(estimators, optimal_thresholds, X_train, X_test,
     ax.set_xticklabels(metrics)
     ax.set_ylim(0, 1)
     ax.set_yticks(np.arange(0, 1.0, 0.05), minor=True)
-    ax.grid(axis='y', linestyle='-', which='minor', linewidth=0.2, color='gray', alpha=0.5)
-    ax.grid(axis='y', linestyle='-', which='major', linewidth=0.4, color='gray', alpha=0.5)
+    ax.grid(axis = "y", linestyle = "-", which = "minor", linewidth = 0.2, color = "gray", alpha = 0.5)
+    ax.grid(axis = "y", linestyle = "-", which = "major", linewidth=0.4, color = "gray", alpha = 0.5)
     ax.legend()
     ax.set_ylabel("Score")
     ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")

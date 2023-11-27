@@ -1,3 +1,4 @@
+import os
 from warnings import filterwarnings
 import pandas as pd
 import numpy as np
@@ -5,7 +6,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 filterwarnings("ignore")
 
-from src.cities_lists import TIER_1, TIER_2
+from src.utils import load_city_list
+
+
+PATH_TIER_1 = os.path.join("data", "cities", "tier_1.txt")
+PATH_TIER_2 = os.path.join("data", "cities", "tier_2.txt")
+TIER_1 = load_city_list(PATH_TIER_1)
+TIER_2 = load_city_list(PATH_TIER_2)
 
 
 def age_calculator(dates_of_birth, reference_dates):
@@ -17,6 +24,10 @@ def age_calculator(dates_of_birth, reference_dates):
     -----------
     dates_of_birth (pd.Series): The column with dates of birth, which will be transformed to age.
     reference_dates (pd.Series): The column with reference dates (lead creation dates).
+    
+    Returns:
+    ------------
+    pd.Series: The column with calculated age.
     """
     
     dates_of_birth = pd.to_datetime(dates_of_birth)
@@ -53,8 +64,8 @@ def data_preparing(data, basic_preparing = False):
                                                         0 if pd.isna(x) or (str(x).isdigit()) 
                                                         else 1)
     
-    data.rename(columns={"DOB": "Age",
-                         "Employer_Name": "Employer_Provided"},
+    data.rename(columns = {"DOB": "Age",
+                           "Employer_Name": "Employer_Provided"},
                 inplace = True)
     
     if not basic_preparing:
@@ -74,7 +85,7 @@ def data_preparing(data, basic_preparing = False):
                                           else "Tier_3" if pd.notna(x) 
                                           else x)
 
-        data.rename(columns={"City": "City_Size"}, inplace = True)
+        data.rename(columns = {"City": "City_Size"}, inplace = True)
         
     X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account", "Device_Type", "LoggedIn", "Disbursed"], 
                   axis = 1)
@@ -217,9 +228,9 @@ class MixedImputer(BaseEstimator, TransformerMixin):
         if self.how == "applied_submitted_compression":
             
             X_transformed["Loan_Amount_Submitted"].fillna(X_transformed["Loan_Amount_Applied"],
-                                                          inplace=True)
+                                                          inplace = True)
             X_transformed["Loan_Tenure_Submitted"].fillna(X_transformed["Loan_Tenure_Applied"],
-                                                          inplace=True)
+                                                          inplace = True)
             
             X_transformed.drop(["Loan_Amount_Applied", "Loan_Tenure_Applied"], 
                                axis = 1, inplace = True)
@@ -241,7 +252,7 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
     to_drop: int, default = 0 
         The number of least important features to drop (0-8 or more if longer list of features is given). 
         For example, if to_drop=2, it will drop the two least important features.
-    least_important_features: list, default: ["num_pipe__Loan_Tenure_Applied",
+    least_important_features: list, default = ["num_pipe__Loan_Tenure_Applied",
                                              "num_pipe__EMI_Loan_Submitted",
                                              "cat_pipe__multi__Var1",
                                              "cat_pipe__multi__Var2",
