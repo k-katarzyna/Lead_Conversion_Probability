@@ -19,9 +19,9 @@ def load_city_list(file_path):
     list: A list containing all the city names from the file.
     """
     
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         line = file.readline()
-        cities = [city.strip() for city in line.split(',')]
+        cities = [city.strip() for city in line.split(",")]
     return cities
 
 
@@ -72,8 +72,8 @@ def load_estimators(folder_path):
 def calculate_classification_metrics(estimators, thresholds, X_train, X_test, y_train, y_test):
     
     """
-    Calculates precision, recall, F1 score, balanced accuracy and the percentage of positive class predictions
-    for a list of estimators, using specified classification thresholds.
+    Calculates precision, recall, F1 score, balanced accuracy and the percentage of positive class
+    predictions for a list of estimators, using specified classification thresholds.
 
     Args:
     -----------
