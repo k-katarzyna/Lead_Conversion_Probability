@@ -31,7 +31,7 @@ def missings_plot(data):
     features_with_nan = [feature for feature in data.columns if data[feature].isnull().sum() > 0]
     number_of_nan_values = [data[feature].isnull().sum() for feature in features_with_nan]
 
-    ax1.barh(features_with_nan, number_of_nan_values, color="steelblue")
+    ax1.barh(features_with_nan, number_of_nan_values, color = "steelblue")
     ax1.set_title("Null values")
     ax1.set_xscale("log")
 
@@ -40,7 +40,7 @@ def missings_plot(data):
                      fontsize = 10,
                      va = "center", 
                      ha = "center",
-                     bbox = dict(boxstyle="round",
+                     bbox = dict(boxstyle = "round",
                                  fc = "aliceblue",
                                  alpha = 0.8))
 
@@ -155,7 +155,7 @@ def feature_importance_plot(importances, feature_names):
     plt.figure(figsize=(7, 6))
     plt.barh(range(len(sorted_names)), 
              sorted_importances, 
-             align="center", color = "steelblue")
+             align = "center", color = "steelblue")
     
     plt.yticks(range(len(sorted_names)), sorted_names)
     plt.xlabel("Feature Importance")
@@ -178,7 +178,7 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
     optimal_thresholds (list): A list of optimal threshold values corresponding to each estimator.
     """
     
-    fig, ax = plt.subplots(2, 2, figsize=(14, 9))
+    fig, ax = plt.subplots(2, 2, figsize = (14, 9))
     ax = ax.flatten()
 
     for i, (estimator_name, scores) in enumerate(results.items()): 
@@ -188,19 +188,19 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
         max_f1 = f1_scores[max_f1_idx]
 
         ax[i].plot(thresholds, precision_scores, 
-                   color="orange", label="Precision")
+                   color = "orange", label = "Precision")
         ax[i].plot(thresholds, recall_scores, 
-                   color="blue", label="Recall")
+                   color = "blue", label = "Recall")
         ax[i].plot(thresholds, g_mean_scores, 
-                   color="red", label="Geometric mean")
+                   color = "red", label = "Geometric mean")
         ax[i].plot(thresholds, f1_scores, 
-                   color="green", label="F1 score")
+                   color = "green", label = "F1 score")
         ax[i].scatter(thresholds[max_f1_idx], max_f1, 
                       c = "darkgreen", label = f"Max F1 = {max_f1:.2f}")
 
-        ax[i].axvline(x=optimal_thresholds[i], 
-                      color="black", linestyle="--", linewidth=0.8, 
-                      label=f"Optimal thresh = {optimal_thresholds[i]}")
+        ax[i].axvline(x = optimal_thresholds[i], 
+                      color = "black", linestyle = "--", linewidth = 0.8, 
+                      label = f"Optimal thresh = {optimal_thresholds[i]}")
 
         ax[i].set_title(estimator_name)
         ax[i].set_xlabel("Threshold")
@@ -255,7 +255,7 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
                    label = f"{name} (AUC={auc})")
         ax[1].plot(fpr, tpr)
         ax[1].scatter(fpr_value, tpr_value, 
-                      s=200, label = f"{name} (t={threshold_value:.2f})")
+                      s = 200, label = f"{name} (t={threshold_value:.2f})")
 
     ax[0].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
     ax[0].set_title("ROC curves")
@@ -297,18 +297,18 @@ def classification_metrics_plot(estimators, optimal_thresholds, X_train, X_test,
                                                        X_train, X_test, y_train, y_test)
     bar_width = 0.2
 
-    fig, ax = plt.subplots(figsize=(13, 5))
+    fig, ax = plt.subplots(figsize = (13, 5))
 
     for i, (name, _) in enumerate(estimators):
         x = np.arange(len(metrics)) + i * bar_width
-        bars = ax.bar(x, scores[i], bar_width, label=name)
+        bars = ax.bar(x, scores[i], bar_width, label = name)
     
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
     ax.set_xticklabels(metrics)
     ax.set_ylim(0, 1)
     ax.set_yticks(np.arange(0, 1.0, 0.05), minor=True)
     ax.grid(axis = "y", linestyle = "-", which = "minor", linewidth = 0.2, color = "gray", alpha = 0.5)
-    ax.grid(axis = "y", linestyle = "-", which = "major", linewidth=0.4, color = "gray", alpha = 0.5)
+    ax.grid(axis = "y", linestyle = "-", which = "major", linewidth = 0.4, color = "gray", alpha = 0.5)
     ax.legend()
     ax.set_ylabel("Score")
     ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")
