@@ -106,15 +106,15 @@ class RareAggregator(BaseEstimator, TransformerMixin):
     -----------
     threshold: int, default = 1000
         The threshold below which categories are considered rare when grouping. Categories with a frequency
-        less than this threshold will be grouped into a single "Others" category.
-    group_by: str, default = "frequency"
-        Supported values are "frequency", "tiers/freq", "big_cities/tiers/freq".
-        - "frequency": Groups rare categories based on their frequency.
-        - "tiers/freq": Groups all cities in the "City" column using official Indian cities classification 
+        less than this threshold will be grouped into a single 'Others' category.
+    group_by: str, default = 'frequency'
+        Supported values are 'frequency', 'tiers/freq', 'big_cities/tiers/freq'.
+        - 'frequency': Groups rare categories based on their frequency.
+        - 'tiers/freq': Groups all cities in the 'City' column using official Indian cities classification 
           (leaves missing values unchanged). Other features will be grouped using frequency.
-        - "big_cities/tiers/freq": Leaves the biggest cities and missing values in the "City" column unchanged, 
+        - 'big_cities/tiers/freq': Leaves the biggest cities and missing values in the 'City' column unchanged, 
           classifies smaller cities as Tier_2 and Tier_3. Other features will be grouped using frequency.
-    rare_category_name: str, default = "Others"
+    rare_category_name: str, default = 'Others'
         The name used for grouping rare categories.
 
     Attributes:
@@ -123,7 +123,7 @@ class RareAggregator(BaseEstimator, TransformerMixin):
         A list of column names containing multilevel categorical features to group by frequency.
     frequent_categories_: dict
         A dictionary containing information about rare categories that were grouped. Keys represent column names,
-        and values are lists of categories that were grouped into the "Others" category for each respective column. 
+        and values are lists of categories that were grouped into the 'Others' category for each respective column. 
     """
 
     def __init__(self,
@@ -168,18 +168,18 @@ class RareAggregator(BaseEstimator, TransformerMixin):
             
         if self.group_by == "tiers/freq":
             
-            X_transformed["City"] = X_transformed["City"].apply(lambda x: 
-                                        "Tier_1" if x in TIER_1 
-                                        else "Tier_2" if x in TIER_2 
-                                        else "Tier_3" if pd.notna(x) 
-                                        else x)
+            X_transformed["City"] = X_transformed["City"].apply(lambda x:
+                                                                "Tier_1" if x in TIER_1 
+                                                                else "Tier_2" if x in TIER_2 
+                                                                else "Tier_3" if pd.notna(x) 
+                                                                else x)
             
         if self.group_by == "big_cities/tiers/freq":
             
             X_transformed["City"] = X_transformed["City"].apply(lambda x: 
-                                        x if x in TIER_1 or pd.isna(x)
-                                        else "Tier_2" if x in TIER_2 
-                                        else "Tier_3")
+                                                                x if x in TIER_1 or pd.isna(x)
+                                                                else "Tier_2" if x in TIER_2 
+                                                                else "Tier_3")
             
         self.frequency_encoding(X_transformed)
          
@@ -193,11 +193,11 @@ class MixedImputer(BaseEstimator, TransformerMixin):
 
     Parameters:
     -----------
-    how: str or NoneType, default="simple"
-        The imputation strategy to be used. Supported values are "simple", "applied_submitted_compression" and None.
-        - "simple": Fills missing values with 0 for 'Loan_Amount_Applied', 'Loan_Tenure_Applied', and 'Existing_EMI',
+    how: str or NoneType, default = 'simple'
+        The imputation strategy to be used. Supported values are 'simple', 'applied_submitted_compression' and None.
+        - 'simple': Fills missing values with 0 for 'Loan_Amount_Applied', 'Loan_Tenure_Applied', and 'Existing_EMI',
               and fills other missing values with -1.
-        - "applied_submitted_compression": Fills missing values in 'Loan_Amount_Submitted' and 'Loan_Tenure_Submitted' 
+        - 'applied_submitted_compression': Fills missing values in 'Loan_Amount_Submitted' and 'Loan_Tenure_Submitted' 
               with corresponding values from 'Loan_Amount_Applied' and 'Loan_Tenure_Applied'. Removes 'Loan_Amount_Applied' 
               and 'Loan_Tenure_Applied' from the dataset. Fills missing 'Existing_EMI' with 0 and other missing values with -1.
         - None: imputation will be skipped.
