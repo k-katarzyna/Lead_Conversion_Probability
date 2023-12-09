@@ -14,6 +14,7 @@ from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_sco
 from sklearn.model_selection import cross_validate, StratifiedKFold, GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
+
 from imblearn.metrics import geometric_mean_score
 
 filterwarnings("ignore")
@@ -251,7 +252,7 @@ def detailed_best_imputation_results(results):
     
     """
     Displays the best ROC_AUC score and its corresponding time for each combination of model and imputation method,
-    excluding 'KNNImputer' method.
+    excluding `KNNImputer` method.
 
     Args:
     ------------
@@ -481,7 +482,7 @@ def create_results_dataframe(*args, saving_csv = None):
     
     Args:
     ----------
-    *args: Variable number of dictionaries or dataframes containing results data.
+    *args(dict or pd.DataFrame): Variable number of elements containing results data.
     saving_csv(str or NoneType): default = None
         Path to save created dataframe as CSV file, None means no saving.
     
@@ -536,17 +537,17 @@ def summarize_results(dataframe, column_to_group_by, folder_path = None):
     Displays summary statistics for a DataFrame grouped by a specified column.
 
     The function takes a DataFrame and a column name as input and computes summary statistics
-    (count, max, mean, min) for two specified columns ("ROC_AUC" and "Time[s]") after grouping
+    (count, max, mean, min) for two specified columns ('ROC_AUC' and 'Time[s]') after grouping
     the DataFrame by the specified column. Returns a styled DataFrame with background gradient
-    applied to the "mean_roc_auc," "max_roc_auc," "mean_time[s]," and "max_time[s]" columns.
+    applied to the 'mean_roc_auc', 'max_roc_auc', 'mean_time[s]', and 'max_time[s]' columns.
 
     Args:
     -----------
     dataframe (pd.DataFrame or str): The input DataFrame containing the data to be summarized.
-        If a string "all_results" is provided, the function needs albo folder_path to be given 
+        If a string 'all_results' is provided, the function needs albo folder_path to be given 
         and reads data from CSV files and creates a summary DataFrame.
     column_to_group_by (str): The name of the column by which the DataFrame should be grouped.
-    folder_path (str): To use only with dataframe == "all_results", provides the folder path 
+    folder_path (str): To use only with dataframe == 'all_results', provides the folder path 
         where files to concat and summarize are located.
 
     Returns:
@@ -579,7 +580,7 @@ def summarize_results(dataframe, column_to_group_by, folder_path = None):
 def process_fold(train_idx, test_idx, X, y, estimator):
     
     """
-    Processes a single fold of cross-validation as part of the 'evaluate_discrimination_thresholds'
+    Processes a single fold of cross-validation as part of the `evaluate_discrimination_thresholds`
     function. Provides training and testing sets for the fold using given indices and calculates 
     the probabilities of positive class predictions.
     
@@ -599,8 +600,8 @@ def process_fold(train_idx, test_idx, X, y, estimator):
     
     X_train, X_test, y_train, y_test = (X.iloc[train_idx],
                                         X.iloc[test_idx],
-                                        y[train_idx],
-                                        y[test_idx])
+                                        y.iloc[train_idx],
+                                        y.iloc[test_idx])
 
     estimator_copy = deepcopy(estimator)
     estimator_copy.fit(X_train, y_train)
@@ -612,8 +613,10 @@ def process_fold(train_idx, test_idx, X, y, estimator):
 def evaluate_discrimination_thresholds(estimators, X, y, thresholds):
     
     """
-    Performs cross-validation for multiple estimators and calculates metrics for specified 
-    discrimination thresholds.
+    Performs parallel cross-validation for multiple estimators, saving the probabilities for each split. 
+    Then, it calculates metrics (F1, precision, recall and geometric mean) across a range of specified
+    discrimination thresholds and plots the results using the `thresholds_results_plot` function. This
+    includes marking the best F1 score and identifying the optimal classification threshold.
 
     Args:
     -----------

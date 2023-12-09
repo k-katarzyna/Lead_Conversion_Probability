@@ -115,7 +115,7 @@ def countplots(*args, data):
     """
 
     for feature in args:
-        plt.figure(figsize=(15, 3))
+        plt.figure(figsize = (15, 3))
         order = data[feature].value_counts().index
         ax = sns.countplot(x = feature,
                            data = data,
@@ -123,15 +123,15 @@ def countplots(*args, data):
                            palette = "viridis")
         
         ax.set_yscale("log")
-        plt.title(f'Distribution of {feature}')
+        plt.title(f"Distribution of {feature}")
 
         if len(str(data[feature].unique()[0])) >= 4:
             plt.xticks(rotation = 45)
 
         for p in ax.patches:
             height = p.get_height()
-            ax.annotate(f'{height:.0f}', (p.get_x() + p.get_width() / 2., height),
-                        ha = 'center', va = 'bottom', fontsize = 10)
+            ax.annotate(f"{height:.0f}", (p.get_x() + p.get_width() / 2., height),
+                        ha = "center", va = "bottom", fontsize = 10)
 
         plt.tight_layout()
         plt.show()
@@ -219,7 +219,7 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
     Plots ROC curves for each estimator, including the ROC AUC score in the legend and marks 
     the optimal classification threshold for each estimator on the zoomed-in plot.
     The zoomed-in plot focuses on the top-left area of the ROC curves where the thresholds are marked.
-
+    
     Args:
     ------------
     estimators (list of tuples): List of tuples where each tuple contains: (estimator_name, estimator object).
@@ -253,13 +253,15 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
 
         ax[0].plot(fpr, tpr, 
                    label = f"{name} (AUC={auc})")
+        
         ax[1].plot(fpr, tpr)
         ax[1].scatter(fpr_value, tpr_value, 
-                      s = 200, label = f"{name} (t={threshold_value:.2f})")
+                      s = 200, 
+                      label = f"{name} (t={threshold_value:.2f})")
 
-    ax[0].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6, label = "No skill")
+    ax[0].plot([0, 1], [0, 1], linestyle = "--", color = "grey", linewidth = 0.6, label = "No skill")
     ax[0].set_title("ROC curves")
-    ax[1].plot([0, 1], [0, 1], linestyle = '--', color = 'grey', linewidth = 0.6)
+    ax[1].plot([0, 1], [0, 1], linestyle = "--", color = "grey", linewidth = 0.6)
     ax[1].set_xlim(0.0, 0.6)
     ax[1].set_ylim(0.4, 1.0)
     ax[1].set_title("ROC curves zoomed in at top left, optimal classification thresholds")
@@ -269,8 +271,8 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
         ax.set_xlabel("False positive rate")
         ax.set_ylabel("True positive rate")
     
-    # plt.savefig("results_data/images/roc_curves.png", dpi = 300)
     plt.tight_layout()
+    # plt.savefig("results_data/images/roc_curves.png", dpi = 300)
     plt.show()
                        
     return auc_scores
@@ -306,7 +308,7 @@ def classification_metrics_plot(estimators, optimal_thresholds, X_train, X_test,
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators) / 2))
     ax.set_xticklabels(metrics)
     ax.set_ylim(0, 1)
-    ax.set_yticks(np.arange(0, 1.0, 0.05), minor=True)
+    ax.set_yticks(np.arange(0, 1.0, 0.05), minor = True)
     ax.grid(axis = "y", linestyle = "-", which = "minor", linewidth = 0.2, color = "gray", alpha = 0.5)
     ax.grid(axis = "y", linestyle = "-", which = "major", linewidth = 0.4, color = "gray", alpha = 0.5)
     ax.legend()
