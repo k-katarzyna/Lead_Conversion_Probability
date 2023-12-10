@@ -347,7 +347,7 @@ def feature_selection_test(X, y, models, estimator, selection_thresholds, save_r
     """
     
     names, params = prepare_models_info(models, PARAMS_TO_SAVE)
-    num_features, cat_features, preprocessor = create_preprocessor(X)
+    _, _, preprocessor = create_preprocessor(X)
     results = []
     
     for threshold in selection_thresholds:
@@ -531,7 +531,7 @@ def load_results_from_folder(folder_path, columns_to_select):
     return create_results_dataframe(*results)
 
 
-def summarize_results(dataframe, column_to_group_by, folder_path = None):
+def summarize_results(results_df, column_to_group_by, folder_path = None):
     
     """
     Displays summary statistics for a DataFrame grouped by a specified column.
@@ -543,11 +543,11 @@ def summarize_results(dataframe, column_to_group_by, folder_path = None):
 
     Args:
     -----------
-    dataframe (pd.DataFrame or str): The input DataFrame containing the data to be summarized.
+    results_df (pd.DataFrame or str): The input DataFrame containing the data to be summarized.
         If a string 'all_results' is provided, the function needs albo folder_path to be given 
         and reads data from CSV files and creates a summary DataFrame.
     column_to_group_by (str): The name of the column by which the DataFrame should be grouped.
-    folder_path (str): To use only with dataframe == 'all_results', provides the folder path 
+    folder_path (str): To use only with results_df == 'all_results', provides the folder path 
         where files to concat and summarize are located.
 
     Returns:
@@ -556,12 +556,12 @@ def summarize_results(dataframe, column_to_group_by, folder_path = None):
         A styled DataFrame with summary statistics and background gradient for specific columns.
     """
     
-    if isinstance(dataframe, str) and dataframe == "all_results":
+    if isinstance(results_df, str) and dataframe == "all_results":
         
         columns_to_select = ["Model", "ROC_AUC", "Time[s]"]
-        dataframe = load_results_from_folder(folder_path, columns_to_select)
+        results_df = load_results_from_folder(folder_path, columns_to_select)
    
-    results = (dataframe
+    results = (results_df
                .groupby(column_to_group_by)
                .agg(
                    {"ROC_AUC": [np.size, np.max, np.mean, np.min],
@@ -594,7 +594,7 @@ def process_fold(train_idx, test_idx, X, y, estimator):
 
     Returns:
     -----------
-    y_test (np.array): True labels for the testing set.
+    y_test (pd.Series): True labels for the testing set.
     y_proba (np.array): Predicted probabilities for the positive class per fold.
     """
     

@@ -26,7 +26,7 @@ def missings_plot(data):
     data (pd.DataFrame): The input DataFrame containing the data.
     """
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 4))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (15, 4))
 
     features_with_nan = [feature for feature in data.columns if data[feature].isnull().sum() > 0]
     number_of_nan_values = [data[feature].isnull().sum() for feature in features_with_nan]
@@ -87,14 +87,14 @@ def histplots_grid(n_rows, n_cols, data, features = None):
     width = n_cols * 4
     height = n_rows * 3
     
-    plt.figure(figsize=(width, height))
+    plt.figure(figsize = (width, height))
     
     for i, feature in enumerate(features):
         plt.subplot(n_rows, n_cols, i + 1)
-        plt.hist(data[feature], color="steelblue")
+        plt.hist(data[feature], color = "steelblue")
         plt.title(feature)
-        plt.locator_params(axis = 'x', nbins = 4)
-        plt.locator_params(axis = 'y', nbins = 4)
+        plt.locator_params(axis = "x", nbins = 4)
+        plt.locator_params(axis = "y", nbins = 4)
         
         if feature in ["Monthly_Income", "Existing_EMI"]:
             plt.yscale("log")
