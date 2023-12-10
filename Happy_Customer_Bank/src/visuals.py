@@ -87,11 +87,11 @@ def histplots_grid(n_rows, n_cols, data, features = None):
     width = n_cols * 4
     height = n_rows * 3
     
-    plt.figure(figsize = (width, height))
+    plt.figure(figsize=(width, height))
     
     for i, feature in enumerate(features):
         plt.subplot(n_rows, n_cols, i + 1)
-        plt.hist(data[feature], color = "steelblue")
+        plt.hist(data[feature], color="steelblue")
         plt.title(feature)
         plt.locator_params(axis = 'x', nbins = 4)
         plt.locator_params(axis = 'y', nbins = 4)
