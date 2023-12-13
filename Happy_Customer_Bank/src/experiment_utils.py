@@ -83,7 +83,7 @@ def create_models(base_models, model_params = None):
     
     models = [model.set_params(random_state = RANDOM_STATE, n_jobs = -1) 
               if "n_jobs" in model.get_params() 
-              else model.set_params(random_state=RANDOM_STATE) 
+              else model.set_params(random_state = RANDOM_STATE) 
               for model in base_models]
 
     if model_params:

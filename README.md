@@ -11,7 +11,7 @@ Several challenges are present, including:
 * some variables with unknown meaning.
 
 ## The Goal
-The primary task is to **predict the probability of loan disbursal**, using **ROC AUC** as the evaluation metric. By identifying potential customers who are more likely to be approved for a loan, the bank can focus its efforts more effectively, thereby increasing its conversion rate.
+The primary task is to **estimate the probability of loan disbursal**, using **ROC AUC** as the evaluation metric. By identifying potential customers who are more likely to be approved for a loan, the bank can focus its efforts more effectively, thereby increasing its conversion rate.
 
 An additional step involves assessing the classification skills of the tested models at different discrimination thresholds. Although the choice of threshold can be influenced by various business factors, a secondary objective is to determine the optimal threshold as a reference point.
 
