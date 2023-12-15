@@ -200,7 +200,7 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
 
         ax[i].axvline(x = optimal_thresholds[i], 
                       color = "black", linestyle = "--", linewidth = 0.8, 
-                      label = f"Optimal thresh = {optimal_thresholds[i]}")
+                      label = f"Optimal thresh = {optimal_thresholds[i]:.2f}")
 
         ax[i].set_title(estimator_name)
         ax[i].set_xlabel("Threshold")

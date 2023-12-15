@@ -196,8 +196,36 @@ def cv_scores(pipeline, X, y, model_name, model_params):
             "Parameters": model_params,
             "ROC_AUC": roc_auc,
             "Time[s]": time}
+
+
+def create_results_dataframe(*args, saving_csv = None):
     
+    """
+    Creates a results dataframe from any number of dictionaries or dataframes.
     
+    Args:
+    ----------
+    *args(dict or pd.DataFrame): Variable number of elements containing results data.
+    saving_csv(str or NoneType): default = None
+        Path to save created dataframe as CSV file, None means no saving.
+    
+    Returns:
+    -----------
+    pd.DataFrame: A DataFrame containing the results.
+    """
+    
+    if len(args) == 1:
+        df = pd.DataFrame(args[0])
+    
+    elif len(args) > 1:
+        df = pd.concat([pd.DataFrame(arg) for arg in args])
+        
+    if saving_csv:
+        df.to_csv(saving_csv, index = False)
+        
+    return df
+
+        
 def imputation_test(X, y, models, preprocessors, save_results_path):
     
     """
@@ -382,7 +410,8 @@ def feature_selection_test(X, y, models, estimator, selection_thresholds, save_r
 def grid_search(X, y, model, param_grid, save_artifact_path):
     
     """
-    Performs grid search for hyperparameter optimization on a given model.
+    Performs grid search for hyperparameter optimization on a given model,
+    saves the best model and displays the best score.
 
     Args:
     ------------
@@ -419,7 +448,8 @@ def grid_search(X, y, model, param_grid, save_artifact_path):
 def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_folder, save_results_path):
     
     """
-    Performs randomized search for hyperparameter optimization on a list of models.
+    Performs randomized search for hyperparameter optimization on a list of models and saves
+    best results, best estimators and a dictionary of mean test scores for analysis.
 
     Args:
     ------------
@@ -438,6 +468,7 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
     """
 
     results = []
+    test_scores = {}
 
     for model, param_grid in zip(models, grids):
 
@@ -452,12 +483,15 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
                                        n_iter = n_iter,
                                        cv = CV_SCHEME,
                                        scoring = "roc_auc",
-                                       n_jobs = -1)
+                                       n_jobs = -1, 
+                                       error_score = "raise")
         optimizer.fit(X, y)
 
         model_name = model.__class__.__name__
         roc_auc = np.round(optimizer.best_score_, 4)
-
+        
+        test_scores[model_name] = optimizer.cv_results_["mean_test_score"]
+        
         idx = np.where(optimizer.cv_results_["rank_test_score"] == 1)
         time = np.round((optimizer.cv_results_["mean_fit_time"] + optimizer.cv_results_["mean_score_time"])[idx][0], 2)
 
@@ -469,38 +503,13 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
         
         artifact_path = os.path.join(save_artifact_folder, model_name + ".pkl")
         dump(optimizer.best_estimator_, artifact_path)
+    
+    test_scores_path = os.path.join("results_data", "randomized_search_test_scores", "test_scores.pkl")
+    dump(test_scores, test_scores_path)
         
     results = create_results_dataframe(results, saving_csv = save_results_path)
     
     return results
-
-
-def create_results_dataframe(*args, saving_csv = None):
-    
-    """
-    Creates a results dataframe from any number of dictionaries or dataframes.
-    
-    Args:
-    ----------
-    *args(dict or pd.DataFrame): Variable number of elements containing results data.
-    saving_csv(str or NoneType): default = None
-        Path to save created dataframe as CSV file, None means no saving.
-    
-    Returns:
-    -----------
-    pd.DataFrame: A DataFrame containing the results.
-    """
-    
-    if len(args) == 1:
-        df = pd.DataFrame(args[0])
-    
-    elif len(args) > 1:
-        df = pd.concat([pd.DataFrame(arg) for arg in args])
-        
-    if saving_csv:
-        df.to_csv(saving_csv, index = False)
-        
-    return df
 
 
 def load_results_from_folder(folder_path, columns_to_select):

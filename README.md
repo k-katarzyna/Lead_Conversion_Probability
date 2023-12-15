@@ -34,7 +34,7 @@ python -m ipykernel install --user --name=happy_customer_bank
 ## Summary and Conclusion
 The project encompassed an exploration of various aspects, including data preprocessing, class balancing, hyperparameter tuning and model selection.
 
-In the initial testing phase, four models were identified that exhibited similar behavior and potential effectiveness for the problem. Following further optimization, the HistGradientBoostingClassifier achieved the highest ROC AUC score of 0.85. However, all of these models could be similarly effective. The final results are depicted below.
+In the initial testing phase, four models were identified that exhibited similar behavior and potential effectiveness for the problem. Following further optimization, the RandomForestClassifier achieved the highest ROC AUC score of 0.85. However, all of these models could be similarly effective. The final results are depicted below.
 
 ![Roc curves](Happy_Customer_Bank/results_data/images/roc_curves.png)
 
