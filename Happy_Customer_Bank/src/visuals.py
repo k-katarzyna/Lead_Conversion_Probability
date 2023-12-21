@@ -193,7 +193,7 @@ def optimization_history_plot(test_scores_path):
         max_score_so_far[key] = max_scores
 
 
-    plt.figure(figsize = (10, 4))
+    plt.figure(figsize = (13, 4))
     for model_name, scores in max_score_so_far.items():
         plt.plot(range(len(scores)), scores, label = model_name)
     plt.legend()
