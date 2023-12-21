@@ -410,7 +410,7 @@ def feature_selection_test(X, y, models, estimator, selection_thresholds, save_r
 def grid_search(X, y, model, param_grid, save_artifact_path):
     
     """
-    Performs grid search for hyperparameter optimization on a given model,
+    Performsa a grid search for hyperparameter optimization on a given model,
     saves the best model and displays the best score.
 
     Args:
@@ -445,11 +445,17 @@ def grid_search(X, y, model, param_grid, save_artifact_path):
     return np.round(optimizer.best_score_, 4)
 
 
-def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_folder, save_results_path):
+def randomized_search(X, y, 
+                      models, grids, 
+                      preprocessors, 
+                      n_iter, 
+                      save_artifact_folder, 
+                      save_results_path, 
+                      save_test_scores_path = None):
     
     """
-    Performs randomized search for hyperparameter optimization on a list of models and saves
-    best results, best estimators and a dictionary of mean test scores for analysis.
+    Performs a randomized search for hyperparameter optimization across a list of models, saving the
+    best results and estimators, and optionally, a dictionary of mean test scores for analysis.
 
     Args:
     ------------
@@ -461,6 +467,7 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
     n_iter (int): Number of iterations for randomized search.
     save_artifact_folder (str): Folder path to save the best models as serialized files.
     save_results_path (str): Path to save the results as a CSV file.
+    save_test_scores_path (str, optional): Path to save dictionary with mean test scores of RandomizedSearchCV.
 
     Returns:
     ------------
@@ -503,9 +510,9 @@ def randomized_search(X, y, models, grids, preprocessors, n_iter, save_artifact_
         
         artifact_path = os.path.join(save_artifact_folder, model_name + ".pkl")
         dump(optimizer.best_estimator_, artifact_path)
-    
-    test_scores_path = os.path.join("results_data", "randomized_search_test_scores", "test_scores.pkl")
-    dump(test_scores, test_scores_path)
+        
+    if save_test_scores_path:   
+        dump(test_scores, save_test_scores_path)
         
     results = create_results_dataframe(results, saving_csv = save_results_path)
     

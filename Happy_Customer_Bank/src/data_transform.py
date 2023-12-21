@@ -48,7 +48,7 @@ def data_preparing(data, basic_preparing = False):
     Args:
     -------------
     data (pd.DataFrame): The input DataFrame containing raw data.
-    basic_preparing: If True, performs only transformations provided as basic.
+    basic_preparing(bool, optional): If True, performs only transformations provided as basic.
 
     Returns:
     -------------

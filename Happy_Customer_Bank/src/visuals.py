@@ -1,3 +1,5 @@
+from joblib import load
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -162,6 +164,42 @@ def feature_importance_plot(importances, feature_names):
     plt.ylabel("Feature Name")
     plt.title("Feature Importances")
     plt.tight_layout()
+    plt.show()
+    
+    
+def optimization_history_plot(test_scores_path):
+    
+    """
+    Finds the maximum ROC AUC achievied in subsequent iterations of RandomizedSearchCV
+    optimization and visalises the results for each model as lineplots.
+    
+    Args:
+    -------------
+    test_scores_path (str): Path to dictionary (saved before as a serialized file),
+        with model names as keys and mean test scores as values.
+    """
+    
+    test_scores = load(test_scores_path)
+    max_score_so_far = {}
+
+    for key, values in test_scores.items():
+        max_scores = []
+        current_max = values[0]
+
+        for value in values:
+            if value > current_max:
+                current_max = value
+            max_scores.append(current_max)
+        max_score_so_far[key] = max_scores
+
+
+    plt.figure(figsize = (10, 4))
+    for model_name, scores in max_score_so_far.items():
+        plt.plot(range(len(scores)), scores, label = model_name)
+    plt.legend()
+    plt.title("Number of randomized search iterations vs. maximum score achieved in subsequent iterations")  
+    plt.ylabel("Best ROC AUC achieved")
+    plt.xlabel("Iterations")
     plt.show()
 
 
