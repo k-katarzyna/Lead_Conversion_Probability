@@ -1,8 +1,10 @@
 ## Introduction
 In today's digital banking, converting leads into customers presents a considerable challenge. Leads come from diverse channels like online searches, display ads, email campaigns and affiliate partnerships. Happy Customer Bank is also grappling with low conversion rates and seeks to improve its performance for a particular loan product.
 
+This task originates from a competition hosted by Analytics Vidhya in 2015, though its details are no longer available.
+
 ## The Dataset
-The dataset contains information about leads, including details such as gender, date of birth, monthly income, employer name, loan amount, interaction data and more. A detailed description can be found in the "Project_main" notebook or by following [this link](https://discuss.analyticsvidhya.com/t/hackathon-3-x-predict-customer-worth-for-happy-customer-bank/3802).
+The dataset contains information about leads, including details such as gender, date of birth, monthly income, employer name, loan amount, interaction data and more. A detailed description can be found in the "Project_main" notebook.
 
 Several challenges are present, including:
 * highly imbalanced classes,
