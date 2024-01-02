@@ -27,9 +27,9 @@ def missings_plot(data):
     """
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 4))
 
-    features_with_nan = [feature for feature in data.columns 
+    features_with_nan = [feature for feature in data.columns
                          if data[feature].isnull().sum() > 0]
-    number_of_nan_values = [data[feature].isnull().sum() 
+    number_of_nan_values = [data[feature].isnull().sum()
                             for feature in features_with_nan]
 
     ax1.barh(features_with_nan, number_of_nan_values, color="steelblue")
@@ -61,8 +61,8 @@ def missings_plot(data):
                      va="center",
                      ha="center",
                      bbox=dict(boxstyle="round",
-                                 fc="azure", 
-                                 alpha=0.8))
+                               fc="azure",
+                               alpha=0.8))
     plt.tight_layout()
     plt.show()
 
@@ -85,7 +85,7 @@ def histplots_grid(n_rows, n_cols, data, features=None):
         than features, some plots will be empty.
     """
     if features is None:
-        features = [feature for feature in data.select_dtypes([int, float]).columns 
+        features = [feature for feature in data.select_dtypes([int, float]).columns
                     if data[feature].nunique() > 2]
     
     width = n_cols * 4
@@ -103,7 +103,7 @@ def histplots_grid(n_rows, n_cols, data, features=None):
         if feature in ["Monthly_Income", "Existing_EMI"]:
             plt.yscale("log")
             
-    plt.tight_layout()    
+    plt.tight_layout()
     plt.show()
 
 
@@ -152,8 +152,8 @@ def feature_importance_plot(importances, feature_names):
     sorted_importances = importances[sorted_indices]
 
     plt.figure(figsize=(7, 6))
-    plt.barh(range(len(sorted_names)), 
-             sorted_importances, 
+    plt.barh(range(len(sorted_names)),
+             sorted_importances,
              align="center",
              color="steelblue")
     
@@ -193,7 +193,8 @@ def optimization_history_plot(test_scores_path):
                  scores,
                  label=model_name)
     plt.legend()
-    plt.title("Number of randomized search iterations vs. maximum score achieved in subsequent iterations")  
+    plt.title("Number of randomized search iterations vs. maximum score achieved "
+              "in subsequent iterations")  
     plt.ylabel("Best ROC AUC achieved")
     plt.xlabel("Iterations")
     plt.show()
@@ -205,7 +206,7 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
     discrimination thresholds.
 
     Args:
-        results (dict): A dictionary containing results for differentestimators.
+        results (dict): A dictionary containing results for different estimators.
             Each key-value pair represents the name of an estimator and its 
             corresponding scores.
         thresholds (np.array): An array of threshold values.
@@ -215,12 +216,12 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
     fig, ax = plt.subplots(2, 2, figsize=(14, 9))
     ax = ax.flatten()
 
-    for i, (estimator_name, scores) in enumerate(results.items()): 
+    for i, (estimator_name, scores) in enumerate(results.items()):
         f1_scores, precision_scores, recall_scores, g_mean_scores = scores
         max_f1_idx = np.argmax(f1_scores)
         max_f1 = f1_scores[max_f1_idx]
 
-        ax[i].plot(thresholds, precision_scores, 
+        ax[i].plot(thresholds, precision_scores,
                    color="orange",
                    label="Precision")
         ax[i].plot(thresholds, recall_scores,
@@ -229,17 +230,17 @@ def thresholds_results_plot(results, thresholds, optimal_thresholds):
         ax[i].plot(thresholds, g_mean_scores,
                    color="red",
                    label="Geometric mean")
-        ax[i].plot(thresholds, f1_scores, 
+        ax[i].plot(thresholds, f1_scores,
                    color="green",
                    label="F1 score")
-        ax[i].scatter(thresholds[max_f1_idx], max_f1, 
+        ax[i].scatter(thresholds[max_f1_idx], max_f1,
                       c="darkgreen",
                       label=f"Max F1 = {max_f1:.2f}")
 
-        ax[i].axvline(x=optimal_thresholds[i], 
-                      color="black", 
-                      linestyle="--", 
-                      linewidth=0.8, 
+        ax[i].axvline(x=optimal_thresholds[i],
+                      color="black",
+                      linestyle="--",
+                      linewidth=0.8,
                       label=f"Optimal thresh = {optimal_thresholds[i]:.2f}")
 
         ax[i].set_title(estimator_name)
@@ -257,7 +258,7 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
     """
     Plot ROC curves for each estimator, including the ROC AUC score in the legend
     and marks the optimal classification threshold for each estimator on the zoomed-in
-    plot. The zoomed-in plot focuses on the top-left area of the ROC curves where 
+    plot. The zoomed-in plot focuses on the top-left area of the ROC curves where
     the thresholds are marked.
     
     Args:
@@ -289,24 +290,25 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
         idx = np.argmin(np.abs(thresholds - opt_threshold))
         fpr_value, tpr_value, threshold_value = fpr[idx], tpr[idx], thresholds[idx]
 
-        ax[0].plot(fpr, tpr, 
+        ax[0].plot(fpr, tpr,
                    label = f"{name} (AUC={auc})")
         
         ax[1].plot(fpr, tpr)
-        ax[1].scatter(fpr_value, tpr_value, 
-                      s = 200, 
+        ax[1].scatter(fpr_value, tpr_value,
+                      s = 200,
                       label = f"{name} (t={threshold_value:.2f})")
         
     no_skill_line_kwargs = dict(color="grey",
                                 linestyle="--",
                                 linewidth=0.6)
-    ax[0].plot([0, 1], 
+    ax[0].plot([0, 1],
                label="No skill",
                **no_skill_line_kwargs)
     ax[1].plot([0, 1],
                **no_skill_line_kwargs)
     ax[0].set_title("ROC curves")
-    ax[1].set_title("ROC curves zoomed in at top left, optimal classification thresholds")
+    ax[1].set_title("ROC curves zoomed in at top left, optimal classification "
+                    "thresholds")
     ax[1].set_xlim(0.0, 0.6)
     ax[1].set_ylim(0.4, 1.0)
 
@@ -351,8 +353,8 @@ def classification_metrics_plot(estimators, optimal_thresholds,
 
     for i, (name, _) in enumerate(estimators):
         x = np.arange(len(metrics)) + i * bar_width
-        bars = ax.bar(x, scores[i], 
-                      bar_width, 
+        bars = ax.bar(x, scores[i],
+                      bar_width,
                       label=name)
     
     ax.set_xticks(np.arange(len(metrics)) + bar_width * (len(estimators)/2))
@@ -365,7 +367,7 @@ def classification_metrics_plot(estimators, optimal_thresholds,
             **grid_params)
     ax.legend()
     ax.set_ylabel("Score")
-    ax.set_title("Comparison of model classification metrics using optimal discrimination thresholds")
-    
+    ax.set_title("Comparison of model classification metrics using optimal "
+                 "discrimination thresholds")
     plt.tight_layout()
     plt.show()

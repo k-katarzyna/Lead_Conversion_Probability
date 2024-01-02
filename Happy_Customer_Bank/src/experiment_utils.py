@@ -92,7 +92,8 @@ def create_models(base_models, model_params=None):
                 models.append(set_model_params(model, 
                                                params))
             else:
-                raise ValueError("Invalid format in model_params list. Each element should be either a dictionary or a list of dictionaries.")
+                raise ValueError("Invalid format in model_params list. Each element "
+                                 "should be either a dictionary or a list of dictionaries.")
             
     return models
 
@@ -426,13 +427,14 @@ def randomized_search(X, y,
     Args:
         X (pd.DataFrame): The input features.
         y (pd.Series): The target labels.
-        models (list): List of machine learning models.
+        models (list of objects): List of machine learning models.
         grids (list of dicts): List of hyperparameter grids corresponding to each model.
         preprocessors (list): List of preprocessors for feature engineering.
         n_iter (int): Number of iterations for randomized search.
-        save_artifact_folder (str): Folder path to save the best models as serialized files.
+        save_artifact_folder (str): Folder path to save the best models as PKL files.
         save_results_path (str): Path to save the results as a CSV file.
-        save_test_scores_path (str): Path to save dictionary with mean test scores.
+        save_test_scores_path (str): Path to save dictionary with mean test scores as
+            a PKL file.
 
     Returns:
         pd.DataFrame: A DataFrame containing the ranking of models after optimization.
@@ -587,9 +589,9 @@ def evaluate_discrimination_thresholds(estimators, X, y, thresholds):
     """
     Perform parallel cross-validation for multiple estimators, saving the probabilities
     for each split. Then, calculate metrics (F1, precision, recall and geometric mean)
-    across a range of specified discrimination thresholds and plot the results using the
-    `thresholds_results_plot` function. This includes marking the best F1 score and
-    identifying the optimal classification threshold.
+    across a range of specified discrimination thresholds and plot the results using
+    the `thresholds_results_plot` function. This includes marking the best F1 score
+    and identifying the optimal classification threshold.
 
     Args:
         estimators (list of tuples): List of (estimator_name, estimator object) pairs.
