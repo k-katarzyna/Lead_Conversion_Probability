@@ -25,13 +25,11 @@ set_config(transform_output="pandas")
 
 RANDOM_STATE = 42
 CV_SCHEME = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
-
 PARAMS_TO_SAVE = ["n_estimators", 
                   "class_weight", 
                   "min_samples_leaf", 
                   "max_samples", 
                   "max_features"]
-
 HANDLE_MISSINGS_MODELS = ["HistGradientBoostingClassifier", 
                           "BaggingClassifier", 
                           "BalancedBagging_OverSampling", 
@@ -62,7 +60,7 @@ def create_models(base_models, model_params=None):
     Create a list of models with specified parameters.
 
     Args:
-        base_models (list): List of base machine learning models.
+        base_models (list of objects): List of base machine learning models.
         model_params (list of [lists of dicts or dicts], optional): default=None
             Parameters for each model. Each element can be a dictionary of parameters 
             for the corresponding model in 'base_models' or a list of dictionaries if 
@@ -432,7 +430,7 @@ def randomized_search(X, y,
         preprocessors (list): List of preprocessors for feature engineering.
         n_iter (int): Number of iterations for randomized search.
         save_artifact_folder (str): Folder path to save the best models as PKL files.
-        save_results_path (str): Path to save the results as a CSV file.
+        save_results_path (str): Path to save the best results as a CSV file.
         save_test_scores_path (str): Path to save dictionary with mean test scores as
             a PKL file.
 
@@ -500,8 +498,6 @@ def load_results_from_folder(folder_path, columns_to_select):
             file_path = os.path.join(folder_path, file_name)
             result_df = pd.read_csv(file_path)[columns_to_select]
             results.append(result_df)
-            
-    results = tuple(results)
   
     return create_results_dataframe(*results)
 
