@@ -1,6 +1,6 @@
 import os
 from copy import deepcopy
-from warnings import filterwarnings
+from warnings import filterwarnings, warn
 from joblib import Parallel, delayed, dump
 
 import pandas as pd
@@ -188,14 +188,12 @@ def cv_scores(pipeline, X, y, model_name, model_params):
             "Time[s]": time}
 
 
-def create_results_dataframe(*args, saving_csv=None):
+def create_results_dataframe(*args):
     """
     Create a results dataframe from any number of dictionaries or dataframes.
     
     Args:
         *args(dict or pd.DataFrame): Variable number of elements containing results data.
-        saving_csv(str, optional): default=None
-            Path to save created dataframe as CSV file, None means no saving.
     
     Returns:
         pd.DataFrame: A DataFrame containing the results.
@@ -205,23 +203,67 @@ def create_results_dataframe(*args, saving_csv=None):
     elif len(args) > 1:
         df = pd.concat([pd.DataFrame(arg) for arg in args])
         
-    if saving_csv:
-        df.to_csv(saving_csv, index=False)
-        
     return df
 
-        
-def imputation_test(X, y, models, preprocessors, save_results_path):
+
+def save_result_data(func):
     """
-    Perform the imputation test, collect and save the results for the tested
-    models' scores.
+    Decorator to save the results of a function to specified file paths.
+
+    The decorator extends a function to save its output. It handles both the primary
+    results and additional data (if any). The primary results are expected to be
+    a pandas DataFrame which is saved to a CSV file. Additional data, if provided,
+    is saved to a PKL file. The paths for saving these outputs are specified through
+    keyword arguments 'save_results_path' and 'save_additional_results_path'
+
+    Args:
+        func (callable): The function whose results are to be saved.
+
+    Returns:
+        Callable: A wrapper function that saves the results of the original function.
+
+    Note:
+        The decorated function should return a DataFrame as its main result. If it 
+        returns a tuple, the first element should be the main DataFrame result and 
+        the second element should be the additional data to be saved using joblib.
+    """
+    def wrapper(*args, **kwargs):
+        returned_values = func(*args, **kwargs)
+
+        if isinstance(returned_values, tuple) and len(returned_values) == 2:
+            results, additional_results = returned_values
+        else:
+            results = returned_values
+            additional_results = None
+
+        save_results_path = kwargs.get("save_results_path", None)
+        save_additional_results_path = kwargs.get("save_additional_results_path", None)
+
+        if save_results_path:
+            results.to_csv(save_results_path, index=False)
+        else:
+            warn("No path provided, the result data won't be saved.")
+        
+        if additional_results and save_additional_results_path:
+            dump(additional_results, save_additional_results_path)
+
+        return results
+    return wrapper
+        
+
+@save_result_data
+def imputation_test(X, y, models, preprocessors, save_results_path=None):
+    """
+    Perform the imputation test, collect and, optionally, save the results
+    for the tested models' scores.
 
     Args:
         X (pd.DataFrame): Input data.
         y (pd.Series): Target labels.
         models (list): List of models to evaluate.
         preprocessors (list): List of imputing preprocessors.
-        save_results_path (str): Path for saving results as CSV file. 
+        save_results_path (str, optional): default=None
+            Path for saving results as a CSV file. 
     
     Returns:
         pd.DataFrame: A DataFrame containing the results of the imputation test.
@@ -250,10 +292,8 @@ def imputation_test(X, y, models, preprocessors, save_results_path):
 
                 result["Imputation"] = imputer
                 results.append(result)
-        
-    results = create_results_dataframe(results, saving_csv=save_results_path) 
     
-    return results
+    return create_results_dataframe(results)
 
 
 def detailed_best_imputation_results(results):
@@ -286,18 +326,20 @@ def detailed_best_imputation_results(results):
                         columns="Imputation", 
                         values=["ROC_AUC", "Time[s]"])
     
-    
-def cat_encoding_test(X, y, models, preprocessors, save_results_path):
+
+@save_result_data
+def cat_encoding_test(X, y, models, preprocessors, save_results_path=None):
     """
-    Perform the category encoding test, collect and save the results for the tested
-    models' scores.
+    Perform the category encoding test, collect and, optionally, save the results
+    for the tested models' scores.
 
     Args:
         X (pd.DataFrame): Input data.
         y (pd.Series): Target labels.
         models (list): List of models to evaluate.
         preprocessors (list): List of categorical preprocessors.
-        save_results_path (str): Path for saving results as CSV file.
+        save_results_path (str, optional): default=None
+            Path for saving results as a CSV file.
     
     Returns:
         pd.DataFrame: A DataFrame containing the results of the category encoding test.
@@ -323,16 +365,15 @@ def cat_encoding_test(X, y, models, preprocessors, save_results_path):
             result["Encoder"] = encoder
             results.append(result)
         
-    results = create_results_dataframe(results, saving_csv=save_results_path)
-    
-    return results
-        
+    return create_results_dataframe(results)
 
-def feature_selection_test(X, y, models, estimator,
-                           selection_thresholds, save_results_path):
+
+@save_result_data
+def feature_selection_test(X, y, models, estimator, selection_thresholds,
+                           save_results_path=None):
     """
-    Perform the feature selection test using feature importances, collect and save
-    the results for the tested models' scores.
+    Perform the feature selection test using feature importances, and, optionally,
+    save the results for the tested models' scores.
 
     Args:
         X (pd.DataFrame): Input data.
@@ -340,7 +381,8 @@ def feature_selection_test(X, y, models, estimator,
         models (list): List of models to evaluate.
         estimator: Machine learning model for use as feature selection estimator.
         selection_thresholds (list): List of threshold values for feature selection.
-        save_results_path (str): Path for saving results as CSV file.
+        save_results_path (str, optional): default=None
+            Path for saving results as a CSV file.
 
     Returns:
         pd.DataFrame: A DataFrame containing the results of the feature selection test.
@@ -371,9 +413,7 @@ def feature_selection_test(X, y, models, estimator,
             
             results.append(result)
             
-    results = create_results_dataframe(results, saving_csv=save_results_path)
-    
-    return results
+    return create_results_dataframe(results)
 
 
 def grid_search(X, y, model, param_grid, save_artifact_path):
@@ -410,17 +450,18 @@ def grid_search(X, y, model, param_grid, save_artifact_path):
     return np.round(optimizer.best_score_, 4)
 
 
+@save_result_data
 def randomized_search(X, y, 
                       models, grids, 
                       preprocessors, 
                       n_iter, 
                       save_artifact_folder, 
-                      save_results_path, 
-                      save_test_scores_path):
+                      save_results_path=None, 
+                      save_additional_results_path=None):
     """
     Perform a randomized search with cross-validation for hyperparameter optimization
     across a list of models, saving the best results and estimators, and a dictionary
-    of mean test scores for analysis.
+    of mean test scores for analysis. Saving result data is optional.
 
     Args:
         X (pd.DataFrame): The input features.
@@ -430,9 +471,10 @@ def randomized_search(X, y,
         preprocessors (list): List of preprocessors for feature engineering.
         n_iter (int): Number of iterations for randomized search.
         save_artifact_folder (str): Folder path to save the best models as PKL files.
-        save_results_path (str): Path to save the best results as a CSV file.
-        save_test_scores_path (str): Path to save dictionary with mean test scores as
-            a PKL file.
+        save_results_path (str, optional): default=None
+            Path to save the best results as a CSV file.
+        save_additional_results_path (str, optional): default=None
+            Path to save dictionary with mean test scores as a PKL file.
 
     Returns:
         pd.DataFrame: A DataFrame containing the ranking of models after optimization.
@@ -470,14 +512,11 @@ def randomized_search(X, y,
                   "Time[s]": time}
 
         results.append(result)
-        
+
         artifact_path = os.path.join(save_artifact_folder, model_name + ".pkl")
         dump(optimizer.best_estimator_, artifact_path)
-        
-    dump(test_scores, save_test_scores_path)  
-    results = create_results_dataframe(results, saving_csv=save_results_path)
     
-    return results
+    return create_results_dataframe(results), test_scores
 
 
 def load_results_from_folder(folder_path, columns_to_select):
