@@ -40,7 +40,7 @@ def age_calculator(dates_of_birth, reference_dates):
     return (reference_dates - dates_of_birth).dt.days // 365
 
 
-def data_preparing(data, basic_preparing=False):
+def data_preparing(data, basic_preparing=False, encode_binaries=False):
     """
     Preprocess and transform the input DataFrame.
 
@@ -48,6 +48,8 @@ def data_preparing(data, basic_preparing=False):
         data (pd.DataFrame): The input DataFrame containing raw data.
         basic_preparing (bool, optional): If True, performs only the transformations 
             that are considered basic. The default value is False.
+        encode_binaries (bool, optional): If True, additionally the binary categorical
+            features are encoded as 0/1.
 
     Returns:
         pd.DataFrame: A preprocessed DataFrame with modified and transformed columns.
@@ -82,6 +84,11 @@ def data_preparing(data, basic_preparing=False):
                                           else "Tier_3" if pd.notna(x) 
                                           else x)
         data.rename(columns={"City": "City_Size"}, inplace=True)
+
+    if encode_binaries:
+        data["Gender"] = data["Gender"].map({"Female": 1, "Male": 0})
+        data["Mobile_Verified"] = data["Mobile_Verified"].map({"Y": 1, "N": 0})
+        data["Filled_Form"] = data["Filled_Form"].map({"Y": 1, "N": 0})
         
     X = data.drop(["ID", "Lead_Creation_Date", "Salary_Account",
                    "Device_Type", "LoggedIn", "Disbursed"], 
@@ -262,14 +269,14 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
         depending on the length of the 'least_important_features' list. If to_drop=2, 
         the two least important features from the list are removed. A value of 0 means 
         no features will be dropped.
-    least_important_features: list, default=["num_pipe__Loan_Tenure_Applied",
-                                             "num_pipe__EMI_Loan_Submitted",
-                                             "cat_pipe__multi__Var1",
-                                             "cat_pipe__multi__Var2",
-                                             "cat_pipe__binary__Mobile_Verified_Y",
-                                             "num_pipe__Loan_Amount_Submitted",
-                                             "num_pipe__Interest_Rate",
-                                             "num_pipe__Loan_Tenure_Submitted"]
+    least_important_features: list, default=['num_pipe__Loan_Tenure_Applied',
+                                             'num_pipe__EMI_Loan_Submitted',
+                                             'cat_pipe__multi__Var1',
+                                             'cat_pipe__multi__Var2',
+                                             'remainder__Mobile_Verified',
+                                             'num_pipe__Loan_Amount_Submitted',
+                                             'num_pipe__Interest_Rate',
+                                             'num_pipe__Loan_Tenure_Submitted']
         A list of features to be considered for removal, sorted in ascending order
         of importance. The 'to_drop' parameter will remove features from the beginning
         of this list.
@@ -281,7 +288,7 @@ class ColumnRemover(BaseEstimator, TransformerMixin):
                                            "num_pipe__EMI_Loan_Submitted",
                                            "cat_pipe__multi__Var1",
                                            "cat_pipe__multi__Var2",
-                                           "cat_pipe__binary__Mobile_Verified_Y",
+                                           "remainder__Mobile_Verified",
                                            "num_pipe__Loan_Amount_Submitted",
                                            "num_pipe__Interest_Rate",
                                            "num_pipe__Loan_Tenure_Submitted"]

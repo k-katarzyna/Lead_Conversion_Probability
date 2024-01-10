@@ -192,6 +192,11 @@ def optimization_history_plot(test_scores_path):
         plt.plot(range(len(scores)),
                  scores,
                  label=model_name)
+        
+    bottom, top = plt.ylim()
+    plt.yticks(np.arange(bottom.round(3), top.round(3), 0.001), minor=True)
+    plt.grid(visible=True, which="both", linewidth=0.3)
+    
     plt.legend()
     plt.title("Number of randomized search iterations vs. maximum score achieved "
               "in subsequent iterations")  
@@ -318,7 +323,7 @@ def roc_curves_plot(estimators, optimal_thresholds, X_train, X_test, y_train, y_
         ax.set_ylabel("True positive rate")
         
     plt.tight_layout()
-    # plt.savefig("results_data/images/roc_curves.png", dpi=300)
+    plt.savefig("results_data/images/roc_curves.png", dpi=200)
     plt.show()
                        
     return auc_scores
