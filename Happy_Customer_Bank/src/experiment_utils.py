@@ -305,11 +305,12 @@ def detailed_best_imputation_results(results):
         results (pd.DataFrame): A DataFrame containing imputation test results. 
 
     Returns:
-        pd.DataFrame: A pivoted DataFrame with models as rows, imputation methods as
-            columns, and two sub-columns for each imputation method: 'ROC_AUC' and 
-            'Time[s]'. Each cell in the 'ROC_AUC' sub-column contains the maximum 
-            ROC_AUC value for the corresponding model and imputation method, and each
-            cell in the 'Time[s]' sub-column contains the time associated with achieving
+        pandas.io.formats.style.Styler
+            A styled DataFrame with models as rows, imputation methods as columns,
+            and two sub-columns for each imputation method: 'ROC_AUC' and 'Time[s]'.
+            Each cell in the 'ROC_AUC' sub-column contains the maximum ROC_AUC value
+            for the corresponding model and imputation method, and each cell in
+            the 'Time[s]' sub-column contains the time associated with achieving
             that ROC_AUC score.
     """
     filtered_results = (results[results["Imputation"] != "KNNImputer"]
@@ -317,15 +318,20 @@ def detailed_best_imputation_results(results):
     max_roc_auc = filtered_results.max().reset_index()
     time = results.loc[filtered_results.idxmax(), ["Model", "Imputation", "Time[s]"]]
     
-    merged = pd.merge(max_roc_auc, 
-                      time, 
-                      on=["Model", "Imputation"], 
-                      how="left")
+    merged = (pd
+              .merge(max_roc_auc,
+                     time,
+                     on=["Model", "Imputation"],
+                     how="left")
+              .pivot(index="Model",
+                     columns="Imputation",
+                     values=["ROC_AUC", "Time[s]"]))
     
-    return merged.pivot(index="Model", 
-                        columns="Imputation", 
-                        values=["ROC_AUC", "Time[s]"])
-    
+    return (merged
+            .style
+            .background_gradient()
+            .apply(lambda x: ["background-color: transparent" if pd.isna(v) else "" for v in x]))
+
 
 @save_result_data
 def cat_encoding_test(X, y, models, preprocessors, save_results_path=None):
